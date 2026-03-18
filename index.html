@@ -1,0 +1,2491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美学原理研究平台</title>
+    <!-- 引入ECharts可视化库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        /* 全局古典配色体系 - 米白宣纸质感 */
+        :root {
+            --bg-main: #f8f3e9; /* 宣纸米白 - 全局主背景 */
+            --bg-card: #fdfaf4; /* 卡片浅米白 - 内容区块背景 */
+            --bg-light: #f5efe3; /* 高亮浅底色 - 按钮、标签背景 */
+            --primary-color: #3a5f7d; /* 石青色 - 主色调，古典书卷蓝 */
+            --accent-color: #b85c38; /* 赭石色 - 强调色，传统朱红棕 */
+            --text-main: #2d2a26; /* 墨黑色 - 主文字，柔和不刺眼 */
+            --text-muted: #5a554e; /* 浅墨色 - 次要文字 */
+            --border-color: #d9c7b8; /* 浅棕褐色 - 边框线，贴合宣纸质感 */
+            --shadow-color: rgba(90, 85, 78, 0.1); /* 柔和阴影 */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { 
+            font-family: 'Noto Sans SC', 'Inter', 'SimSun', serif; 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            line-height: 1.75;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+                /* 导航栏 - 古典书卷风（修复版：不遮挡） */
+        nav { 
+            position: fixed; 
+            top: 0; 
+            width: 100%; 
+            background: rgba(248, 243, 233, 0.98); 
+            backdrop-filter: blur(10px); 
+            z-index: 1000; 
+            border-bottom: 1px solid var(--border-color); 
+            min-height: 70px; /* 增加最小高度，防止文字被切 */
+            display: flex;
+            align-items: center;
+        }
+        .nav-container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 0.8rem 2rem; /* 调整内边距 */
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            width: 100%;
+        }
+        .logo { 
+            font-size: 1.4rem; 
+            font-weight: 800; 
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            line-height: 1.2; /* 防止logo文字被切 */
+            white-space: nowrap;
+        }
+        .nav-links { 
+            display: flex; 
+            gap: 1.2rem; 
+            list-style: none; 
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .nav-links a { 
+            color: var(--text-muted); 
+            text-decoration: none; 
+            font-weight: 500; 
+            transition: color 0.3s; 
+            cursor: pointer; 
+            font-size: 0.9rem;
+            line-height: 1.5; /* 防止链接文字被切 */
+            padding: 0.3rem 0;
+        }
+        .nav-links a:hover { 
+            color: var(--accent-color); 
+            border-bottom: 2px solid var(--accent-color); 
+        }
+
+        /* 给Hero区增加顶部padding，防止被导航盖住 */
+        #hero { 
+            padding-top: 120px !important; /* 关键修复：避开导航栏 */
+        }
+
+        /* 通用区块样式 */
+        section { 
+            padding: 5rem 2rem; 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            flex: 1;
+        }
+        .section-title { 
+            font-size: 2.4rem; 
+            margin-bottom: 0.8rem; 
+            text-align: center; 
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        .section-subtitle { 
+            text-align: center; 
+            color: var(--text-muted); 
+            max-width: 800px; 
+            margin: 0 auto 3rem; 
+            font-size: 1.05rem; 
+        }
+        .section-title::after { 
+            content: ''; 
+            display: block; 
+            width: 70px; 
+            height: 3px; 
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); 
+            margin: 0.8rem auto; 
+            border-radius: 2px; 
+        }
+
+        /* 首页Hero区 - 古典书卷风 */
+        #hero { 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            background: linear-gradient(180deg, #f5efe3 0%, var(--bg-main) 100%); 
+            padding: 0 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        #hero h1 { 
+            font-size: 3.8rem; 
+            margin-bottom: 1.2rem; 
+            letter-spacing: -1px; 
+            line-height: 1.2;
+            color: var(--primary-color);
+        }
+        #hero .core-book { 
+            font-size: 1.15rem; 
+            color: var(--accent-color); 
+            margin-bottom: 1rem; 
+            font-weight: 500;
+        }
+        #hero p { 
+            font-size: 1.15rem; 
+            color: var(--text-muted); 
+            max-width: 700px; 
+            margin-bottom: 2.5rem; 
+        }
+        .cta-btn { 
+            padding: 0.9rem 2.3rem; 
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); 
+            color: white; 
+            border: none; 
+            border-radius: 50px; 
+            font-size: 1.05rem; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            text-decoration: none; 
+        }
+        .cta-btn:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 10px 25px rgba(58, 95, 125, 0.2); 
+        }
+
+        /* 通用卡片网格 - 紧凑版 */
+        .compact-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); 
+            gap: 1.8rem; 
+        }
+        .compact-card { 
+            background: var(--bg-card); 
+            padding: 2rem 1.75rem; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color); 
+            transition: all 0.3s; 
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        .compact-card:hover { 
+            transform: translateY(-6px); 
+            border-color: var(--primary-color); 
+            box-shadow: 0 10px 25px var(--shadow-color); 
+        }
+        .compact-card h3 { 
+            font-size: 1.4rem; 
+            margin-bottom: 0.8rem; 
+            color: var(--accent-color); 
+        }
+        .compact-card .core-proposition { 
+            font-weight: 600; 
+            color: var(--text-main); 
+            margin-bottom: 0.8rem; 
+            padding-left: 0.5rem; 
+            border-left: 3px solid var(--primary-color); 
+        }
+        .compact-card p { 
+            color: var(--text-muted); 
+            font-size: 0.96rem; 
+            line-height: 1.75; 
+        }
+        .book-mark { 
+            display: inline-block; 
+            margin-top: 1.2rem; 
+            padding: 0.25rem 0.7rem; 
+            background: var(--bg-light); 
+            color: var(--primary-color); 
+            border-radius: 4px; 
+            font-size: 0.82rem; 
+            border: 1px solid var(--border-color);
+        }
+
+        /* 标准卡片网格 */
+        .standard-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
+            gap: 1.8rem; 
+        }
+        .standard-card { 
+            background: var(--bg-card); 
+            padding: 2.2rem 1.8rem; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color); 
+            transition: all 0.3s; 
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        .standard-card:hover { 
+            transform: translateY(-6px); 
+            border-color: var(--primary-color); 
+            box-shadow: 0 10px 25px var(--shadow-color); 
+        }
+        .standard-card h3 { 
+            font-size: 1.4rem; 
+            margin-bottom: 0.8rem; 
+            color: var(--accent-color); 
+        }
+        .standard-card .core-proposition { 
+            font-weight: 600; 
+            color: var(--text-main); 
+            margin-bottom: 0.8rem; 
+            padding-left: 0.5rem; 
+            border-left: 3px solid var(--primary-color); 
+        }
+        .standard-card p { 
+            color: var(--text-muted); 
+            font-size: 0.96rem; 
+            line-height: 1.75; 
+        }
+        .confusion-box {
+            margin-top: 1.2rem;
+            padding: 1rem;
+            background: #fff8f0;
+            border-left: 3px solid var(--accent-color);
+            border-radius: 0 8px 8px 0;
+        }
+        .confusion-box h4 {
+            color: var(--accent-color);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .confusion-box p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* 圆桌论坛可视化模块样式 */
+        .forum-container {
+            background: var(--bg-card);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        .forum-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .scholar-btn {
+            padding: 0.6rem 1.5rem;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .scholar-btn.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        .scholar-btn:hover {
+            transform: translateY(-2px);
+        }
+        .forum-content {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        .scholar-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        .scholar-speech {
+            flex: 1;
+            background: var(--bg-light);
+            padding: 1.8rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        .scholar-speech::before {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 40px;
+            border-width: 10px 15px 10px 0;
+            border-style: solid;
+            border-color: transparent var(--bg-light) transparent transparent;
+        }
+        .scholar-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        .scholar-school {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        .scholar-idea {
+            color: var(--text-main);
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        /* 西方美学史时间轴 */
+        .timeline-container { 
+            position: relative; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        .timeline-container::after { 
+            content: ''; 
+            position: absolute; 
+            width: 4px; 
+            background-color: var(--border-color); 
+            top: 0; 
+            bottom: 0; 
+            left: 50%; 
+            margin-left: -2px; 
+        }
+        .timeline-item { 
+            padding: 10px 40px; 
+            position: relative; 
+            width: 50%; 
+            box-sizing: border-box; 
+        }
+        .timeline-item::after { 
+            content: ''; 
+            position: absolute; 
+            width: 20px; 
+            height: 20px; 
+            background-color: var(--accent-color); 
+            border: 4px solid var(--primary-color); 
+            border-radius: 50%; 
+            top: 15px; 
+            z-index: 1; 
+        }
+        .timeline-left { left: 0; }
+        .timeline-right { left: 50%; }
+        .timeline-left::after { right: -13px; }
+        .timeline-right::after { left: -13px; }
+        .timeline-content { 
+            padding: 1.8rem; 
+            background-color: var(--bg-card); 
+            border-radius: 10px; 
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        .timeline-content h3 { 
+            font-size: 1.4rem; 
+            margin-bottom: 0.5rem; 
+            color: var(--accent-color); 
+        }
+        .timeline-content .core-figure { 
+            font-weight: 600; 
+            margin-bottom: 0.8rem; 
+            color: var(--text-main); 
+        }
+        .timeline-content p { 
+            color: var(--text-muted); 
+            font-size: 0.95rem; 
+        }
+
+        /* 中国古典美学板块 */
+        .chinese-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.8rem;
+        }
+        .dynasty-card {
+            background: var(--bg-card);
+            padding: 1.8rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px var(--shadow-color);
+            transition: all 0.3s;
+        }
+        .dynasty-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+        }
+        .dynasty-card h3 {
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .dynasty-card .core-figures {
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            color: var(--accent-color);
+        }
+        .dynasty-card .category-item {
+            margin-bottom: 0.8rem;
+            padding-left: 1rem;
+            border-left: 2px solid var(--border-color);
+        }
+        .dynasty-card .category-title {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .dynasty-card .category-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* 知识图谱可视化容器（放大版） */
+        #graph-container { 
+            width: 100%; 
+            height: 900px; /* 从800px增加到900px，大幅放大 */
+            background: var(--bg-card); 
+            border-radius: 16px; 
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px var(--shadow-color); 
+            margin-top: 2rem; 
+        }
+
+        /* 标签样式 */
+        .research-tag {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.25rem 0.7rem;
+            background: var(--bg-light);
+            color: var(--primary-color);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border-color);
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 原著精读板块 */
+        .book-tabs { 
+            display: flex; 
+            justify-content: center; 
+            gap: 1.8rem; 
+            margin-bottom: 2.5rem; 
+            flex-wrap: wrap; 
+        }
+        .tab-btn { 
+            padding: 0.7rem 1.8rem; 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 50px; 
+            color: var(--text-main); 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            font-weight: 500; 
+        }
+        .tab-btn.active { 
+            background: var(--primary-color); 
+            border-color: var(--primary-color); 
+            color: white;
+        }
+        .tab-content { 
+            display: none; 
+            background: var(--bg-card); 
+            padding: 2.5rem; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        .tab-content.active { 
+            display: block; 
+        }
+        .tab-content h3 { 
+            font-size: 1.7rem; 
+            margin-bottom: 1.8rem; 
+            color: var(--accent-color); 
+        }
+        .chapter-item { 
+            margin-bottom: 1.8rem; 
+            padding-bottom: 1.8rem; 
+            border-bottom: 1px solid var(--border-color); 
+        }
+        .chapter-item:last-child { 
+            border-bottom: none; 
+            margin-bottom: 0; 
+            padding-bottom: 0; 
+        }
+        .chapter-title { 
+            font-size: 1.25rem; 
+            font-weight: 600; 
+            margin-bottom: 0.8rem; 
+        }
+        .chapter-desc { 
+            color: var(--text-muted); 
+            line-height: 1.75; 
+        }
+
+        /* 文化计算可视化工具板块 - 拓展版 */
+        .tools-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr)); 
+            gap: 2.5rem; 
+            margin-bottom: 3rem;
+        }
+        .tool-box { 
+            background: var(--bg-card); 
+            padding: 2.2rem; 
+            border-radius: 16px; 
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        .tool-box h3 { 
+            font-size: 1.5rem; 
+            margin-bottom: 0.8rem; 
+            text-align: center; 
+            color: var(--accent-color); 
+        }
+        .tool-desc {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 1.8rem;
+            font-size: 0.95rem;
+        }
+        .chart-container {
+            width: 100%;
+            height: 350px;
+            margin: 1rem 0;
+        }
+        .research-flow {
+            margin-top: 1.8rem;
+            padding: 1.5rem;
+            background: var(--bg-light);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .research-flow h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.8rem;
+        }
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+            line-height: 24px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        /* 页脚样式 */
+        footer {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: auto;
+        }
+        footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        footer a:hover {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 992px) {
+            .timeline-container::after { left: 31px; }
+            .timeline-item { width: 100%; padding-left: 70px; padding-right: 25px; }
+            .timeline-item::after { left: 18px; }
+            .timeline-right { left: 0; }
+            .tools-grid { grid-template-columns: 1fr; }
+            .chart-container { height: 300px; }
+            .nav-links { gap: 0.8rem; font-size: 0.88rem; }
+            .compact-grid { grid-template-columns: 1fr; }
+            .forum-content { flex-direction: column; align-items: center; text-align: center; }
+            .scholar-speech::before { display: none; }
+        }
+        @media (max-width: 768px) {
+            #hero h1 { font-size: 2.5rem; }
+            .nav-links { display: none; }
+            .section-title { font-size: 2rem; }
+            .standard-grid, .chinese-grid { grid-template-columns: 1fr; }
+        }        /* --- 新增：交叉学科精美交互排版 CSS --- */
+        .interdisciplinary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        .inter-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px var(--shadow-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .inter-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 25px var(--shadow-color);
+        }
+        .inter-card-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .inter-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .inter-title {
+            flex: 1;
+        }
+        .inter-title h3 {
+            font-size: 1.3rem;
+            margin: 0 0 0.3rem 0;
+            color: var(--primary-color);
+        }
+        .inter-title p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .inter-arrow {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            transition: transform 0.3s;
+            flex-shrink: 0;
+        }
+        .inter-card.active .inter-arrow {
+            transform: rotate(180deg);
+        }
+        .inter-card-detail {
+            display: none;
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-light);
+        }
+        .inter-card.active .inter-card-detail {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 响应式：手机端单列 */
+        @media (max-width: 768px) {
+            .interdisciplinary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+                    /* --- 新增：核心理论交互可视化 CSS --- */
+        .theory-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+        }
+        .theory-btn {
+            padding: 0.7rem 1.6rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .theory-btn.active, .theory-btn:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        .theory-visual-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 2rem;
+        }
+        .theory-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            transition: all 0.4s ease;
+            border: 1px solid var(--border-color);
+        }
+        .theory-card.hidden {
+            display: none;
+        }
+        .theory-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 35px var(--shadow-color);
+        }
+        .theory-card-top {
+            padding: 1.5rem;
+            color: white;
+            position: relative;
+        }
+        .theory-number {
+            font-size: 3rem;
+            font-weight: 800;
+            opacity: 0.3;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+        .theory-card-top h3 {
+            font-size: 1.5rem;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+        .theory-card-body {
+            padding: 1.8rem;
+        }
+               /* --- 新增：中国古典美学体系精美排版 CSS --- */
+        .chinese-aesthetics-timeline {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        .chinese-era-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        .chinese-era-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px var(--shadow-color);
+        }
+        .chinese-era-header {
+            padding: 1.5rem;
+            color: white;
+        }
+        .era-name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+        .era-years {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+        .chinese-era-body {
+            padding: 1.5rem;
+        }
+        .core-figures-group {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+        }
+        .figure-tag {
+            padding: 0.35rem 0.9rem;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        .idea-block {
+            margin-bottom: 1.2rem;
+            padding-left: 1rem;
+            border-left: 3px solid var(--border-color);
+        }
+        .idea-block h4 {
+            font-size: 1.1rem;
+            margin: 0 0 0.5rem 0;
+            color: var(--accent-color);
+        }
+        .idea-block p {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+        }
+
+        /* 手机端适配 */
+        @media (max-width: 768px) {
+            .chinese-aesthetics-timeline {
+                grid-template-columns: 1fr;
+            }
+        } 
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">美学原理研究平台</div>
+            <ul class="nav-links">
+                <li><a href="#hero">首页</a></li>
+                <li><a href="#intro">学科导论</a></li>
+                <li><a href="#core-theory">核心理论</a></li>
+                <li><a href="#chinese-aesthetics">中国古典美学</a></li>
+                <li><a href="#western-history">西方美学史</a></li>
+                <li><a href="#knowledge-graph">思想图谱</a></li>
+                <li><a href="#frontier-research">学术前沿</a></li>
+                <li><a href="#interdisciplinary">交叉学科</a></li>
+                <li><a href="#application">实践应用</a></li>
+                <li><a href="#original-book">原著精读</a></li>
+                <li><a href="#forum">思想论坛</a></li>
+                <li><a href="#visual-tools">文化计算</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 首页Hero区 -->
+    <section id="hero">
+        <div class="core-book">贯通中西美学体系 · 融合理论与实践 · 结合数字人文研究方法</div>
+        <h1>美学原理学习与研究平台</h1>
+        <p>梳理中西美学两千年思想演进，构建完整的美学原理知识体系，呈现美学研究的学术前沿与实践应用场景</p>
+        <a href="#intro" class="cta-btn">了解美学学科</a>
+    </section>
+
+    <!-- 美学学科导论 - 优化分段与作者标注 -->
+    <section id="intro">
+        <h2 class="section-title">美学学科导论</h2>
+        <p class="section-subtitle">系统梳理美学学科的核心定义、学科性质、发展脉络、学习内容与方法，建立完整的学科认知</p>
+        
+        <div class="compact-grid">
+            <!-- 1. 美学的定义与学科性质 -->
+            <div class="compact-card">
+                <h3>美学的定义与学科性质</h3>
+                <div class="core-proposition">美学是一门以审美活动为核心研究对象的人文学科，聚焦于人的审美体验与审美世界的建构</div>
+                <p>参考国内主流美学教材的通用定义，美学的研究核心是人类的审美活动，即人与世界形成的非功利、超主客二分的审美关系，其研究范围涵盖美、美感、艺术、自然审美、日常生活审美等多个维度。</p>
+                <p>从学科性质来看，美学属于人文学科，区别于自然科学与社会科学。它不追求普遍的客观规律，而是以人的生命体验、精神世界为核心，关注审美活动对人格养成、人生境界提升的价值，核心是实现人的精神自由与全面发展。</p>
+            </div>
+
+            <!-- 2. 美学学科的诞生与发展 -->
+            <div class="compact-card">
+                <h3>美学学科的诞生与发展</h3>
+                <div class="core-proposition">1750年鲍姆嘉通《美学》的出版，标志着美学作为独立学科正式确立</div>
+                <p>1750年，德国哲学家鲍姆嘉通首次提出「Aesthetica」（感性学）的概念，将美学定义为「感性认识的科学」，填补了哲学体系中感性研究的空白，鲍姆嘉通也因此被称为「美学之父」。</p>
+                <p>西方美学经康德、黑格尔的德国古典美学体系建构，成为哲学的核心分支；19世纪后完成现代转向，从「美的本质」的抽象思辨，转向对审美经验、艺术实践的研究。中国美学在20世纪完成现代转型，王国维、蔡元培等学者率先引入西方美学体系，朱光潜、宗白华等学者奠定了中国现代美学的学科基础，形成了融合中西的学术传统。</p>
+            </div>
+
+            <!-- 3. 美学原理的核心学习内容 - 优化分段，注明作者 -->
+            <div class="compact-card">
+                <h3>美学原理的核心学习内容</h3>
+                <div class="core-proposition">以审美活动为逻辑起点，构建从审美本体到实践应用的完整知识体系</div>
+                <p>参考叶朗《美学原理》、朱光潜《谈美》、杨春时《美学》等经典教材的核心内容框架，主要学习模块包括：</p>
+                <p style="margin-top: 0.5rem;"><b>审美本体论</b>：即审美活动的本质与特征，这是美学学科的逻辑起点。</p>
+                <p><b>美论</b>：即审美意象的生成逻辑与本质，探讨美的本体问题。</p>
+                <p><b>美感论</b>：即审美体验的性质、特征与心理机制，分析美感的生成过程。</p>
+                <p><b>审美范畴论</b>：即优美、崇高、悲剧、意境等核心审美形态，梳理中西美学的核心范畴体系。</p>
+                <p><b>艺术美论</b>：即艺术的本体、创造与鉴赏，探讨艺术中的美学问题。</p>
+                <p><b>自然美与社会美论</b>：即日常生活中的审美维度，拓展美学的研究边界。</p>
+                <p><b>审美教育论</b>：即美育的本质、功能与实践路径，落实美学的现实价值。</p>
+                <p><b>中西美学史</b>：即中西美学思想的演进脉络，建立历史视野。</p>
+            </div>
+
+            <!-- 4. 美学原理的学习方法 -->
+            <div class="compact-card">
+                <h3>美学原理的学习方法</h3>
+                <div class="core-proposition">史论结合、中西互鉴、体验与思辨统一、理论与实践结合</div>
+                <p><b>史论结合学习法</b>：将美学理论与美学史的学习同步推进，理解理论的历史语境与思想源流，避免脱离历史的抽象概念记忆。</p>
+                <p><b>中西互鉴学习法</b>：同时把握中国古典美学与西方美学体系，在对比中理解中西美学的核心差异与共通性，建立完整的美学视野。</p>
+                <p><b>文本细读学习法</b>：精读美学经典原著，直接与经典思想家对话，把握理论的完整逻辑与核心内涵，而非仅依赖概论类教材。</p>
+                <p><b>体验与思辨统一法</b>：在艺术欣赏、自然审美等实践中积累真实的审美体验，再以理论反思体验，避免脱离体验的空洞思辨。</p>
+                <p><b>理论联系实践法</b>：将美学理论与日常生活、艺术创作、文化实践结合，理解美学的现实意义与实践价值。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 美学核心理论体系 -->
+    <section id="core-theory">
+        <!-- 美学核心理论体系（交互可视化版） -->
+    <section id="core-theory">
+        <h2 class="section-title">美学核心理论体系</h2>
+        <p class="section-subtitle">点击下方不同颜色的理论模块，查看该方向的核心命题与参考书目</p>
+        
+        <!-- 交互可视化控制面板 -->
+        <div class="theory-controls">
+            <button class="theory-btn active" onclick="switchTheory('all')">全部理论</button>
+            <button class="theory-btn" onclick="switchTheory('ontology')">审美本体论</button>
+            <button class="theory-btn" onclick="switchTheory('category')">审美范畴论</button>
+            <button class="theory-btn" onclick="switchTheory('art')">艺术美论</button>
+            <button class="theory-btn" onclick="switchTheory('education')">审美教育论</button>
+        </div>
+
+        <!-- 交互可视化卡片网格 -->
+        <div class="theory-visual-grid" id="theory-visual-grid">
+            <!-- 1. 审美活动论 -->
+            <div class="theory-card" data-type="ontology">
+                <div class="theory-card-top" style="background: linear-gradient(135deg, #3a5f7d, #5a7d9a);">
+                    <span class="theory-number">01</span>
+                    <h3>审美活动论</h3>
+                </div>
+                <div class="theory-card-body">
+                    <div class="core-proposition">审美活动是人类的基本生存活动</div>
+                    <p>审美活动的本质是超越主客二分的意向性活动，它生成人与世界的交融关系，照亮真实的生活世界。</p>
+                    <span class="book-mark">参考叶朗《美学原理》第一章</span>
+                </div>
+            </div>
+
+            <!-- 2. 审美意象论 -->
+            <div class="theory-card" data-type="ontology">
+                <div class="theory-card-top" style="background: linear-gradient(135deg, #b85c38, #d47856);">
+                    <span class="theory-number">02</span>
+                    <h3>审美意象论</h3>
+                </div>
+                <div class="theory-card-body">
+                    <div class="core-proposition">美在意象，情景交融</div>
+                    <p>意象是审美活动的核心产物，它不是物理实在，也不是抽象的概念，而是在审美活动中生成的、充满意蕴的完整感性世界。</p>
+                    <span class="book-mark">参考叶朗《美学原理》第二、三章</span>
+                </div>
+            </div>
+
+            <!-- 3. 审美范畴论 -->
+            <div class="theory-card" data-type="category">
+                <div class="theory-card-top" style="background: linear-gradient(135deg, #7c3aed, #9d6eff);">
+                    <span class="theory-number">03</span>
+                    <h3>审美范畴论</h3>
+                </div>
+                <div class="theory-card-body">
+                    <div class="core-proposition">审美范畴是人生境界的感性呈现</div>
+                    <p>涵盖西方核心审美范畴：优美、崇高、悲剧、喜剧；同时纳入中国古典美学核心范畴：意境、气韵、神思、虚实、阳刚与阴柔。</p>
+                    <span class="book-mark">参考叶朗《美学原理》第四、五章</span>
+                </div>
+            </div>
+
+            <!-- 4. 艺术美论 -->
+            <div class="theory-card" data-type="art">
+                <div class="theory-card-top" style="background: linear-gradient(135deg, #4f7942, #73a35f);">
+                    <span class="theory-number">04</span>
+                    <h3>艺术美论</h3>
+                </div>
+                <div class="theory-card-body">
+                    <div class="core-proposition">艺术的核心是审美意象的生成</div>
+                    <p>艺术的本体是审美意象，打破「艺术即模仿」「艺术即表现」的片面观点。艺术作品的存在依赖于审美主体的欣赏活动。</p>
+                    <span class="book-mark">参考叶朗《美学原理》第六章</span>
+                </div>
+            </div>
+
+            <!-- 5. 自然美与社会美 -->
+            <div class="theory-card" data-type="art">
+                <div class="theory-card-top" style="background: linear-gradient(135deg, #8b5a2b, #b87a4b);">
+                    <span class="theory-number">05</span>
+                    <h3>自然与社会美</h3>
+                </div>
+                <div class="theory-card-body">
+                    <div class="core-proposition">自然全美，社会在人</div>
+                    <p>自然美不在于自然物的物理属性，而在于自然物在审美活动中生成的意象世界；社会美植根于人的生活世界，核心是人文意蕴。</p>
+                    <span class="book-mark">参考叶朗《美学原理》第七、八章</span>
+                </div>
+            </div>
+
+            <!-- 6. 审美教育论 -->
+            <div class="theory-card" data-type="education">
+                <div class="theory-card-top" style="background: linear-gradient(135deg, #2d5a27, #4a8c40);">
+                    <span class="theory-number">06</span>
+                    <h3>审美教育论</h3>
+                </div>
+                <div class="theory-card-body">
+                    <div class="core-proposition">美育的核心是提升人生境界</div>
+                    <p>美育不是技能教育，而是情感教育、人性教育。它的根本目的是培养人的审美能力，完善人的人格，使人获得精神的自由与解放。</p>
+                    <span class="book-mark">参考叶朗《美学原理》第十五章</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+       <!-- 中国古典美学体系（精美排版版） -->
+    <section id="chinese-aesthetics">
+        <h2 class="section-title">中国古典美学体系</h2>
+        <p class="section-subtitle">参考叶朗《中国美学史大纲》的核心脉络，呈现中国古典美学的思想演进</p>
+        
+        <div class="chinese-aesthetics-timeline">
+            <!-- 1. 先秦两汉 -->
+            <div class="chinese-era-card">
+                <div class="chinese-era-header" style="background: linear-gradient(135deg, #8b5a2b, #b87a4b);">
+                    <div class="era-name">先秦两汉</div>
+                    <div class="era-years">公元前5世纪 - 公元3世纪</div>
+                </div>
+                <div class="chinese-era-body">
+                    <div class="core-figures-group">
+                        <div class="figure-tag">孔子</div>
+                        <div class="figure-tag">老子</div>
+                        <div class="figure-tag">庄子</div>
+                        <div class="figure-tag">《乐记》</div>
+                    </div>
+                    <div class="idea-block">
+                        <h4>儒家美学</h4>
+                        <p>孔子提出「里仁为美」「兴于诗，立于礼，成于乐」，将美与仁、善统一，确立了审美与人格修养、社会教化的关联。</p>
+                    </div>
+                    <div class="idea-block">
+                        <h4>道家美学</h4>
+                        <p>老子提出「道法自然」「大音希声，大象无形」；庄子提出「天地有大美而不言」「心斋坐忘」，为中国古典审美意象理论奠定了哲学基础。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 魏晋南北朝 -->
+            <div class="chinese-era-card">
+                <div class="chinese-era-header" style="background: linear-gradient(135deg, #5a7d9a, #7a9dba);">
+                    <div class="era-name">魏晋南北朝</div>
+                    <div class="era-years">公元3世纪 - 公元6世纪</div>
+                </div>
+                <div class="chinese-era-body">
+                    <div class="core-figures-group">
+                        <div class="figure-tag">刘勰</div>
+                        <div class="figure-tag">顾恺之</div>
+                        <div class="figure-tag">谢赫</div>
+                        <div class="figure-tag">宗炳</div>
+                    </div>
+                    <div class="idea-block">
+                        <h4>审美自觉时代</h4>
+                        <p>魏晋玄学推动了中国美学的自觉，从人物品藻到艺术审美，确立了「气韵生动」的核心审美准则。</p>
+                    </div>
+                    <div class="idea-block">
+                        <h4>核心理论建树</h4>
+                        <p>顾恺之「以形写神」；谢赫《古画品录》「六法」；刘勰《文心雕龙》「神思」「隐秀」；宗炳「澄怀味象」。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 唐宋 -->
+            <div class="chinese-era-card">
+                <div class="chinese-era-header" style="background: linear-gradient(135deg, #b85c38, #d47856);">
+                    <div class="era-name">唐宋</div>
+                    <div class="era-years">公元7世纪 - 公元13世纪</div>
+                </div>
+                <div class="chinese-era-body">
+                    <div class="core-figures-group">
+                        <div class="figure-tag">司空图</div>
+                        <div class="figure-tag">严羽</div>
+                        <div class="figure-tag">苏轼</div>
+                        <div class="figure-tag">张彦远</div>
+                    </div>
+                    <div class="idea-block">
+                        <h4>意境理论的成熟</h4>
+                        <p>唐代王昌龄首次提出「意境」范畴，司空图《二十四诗品》系统构建了意境的审美形态，确立了「韵外之致」「味外之旨」的审美准则。</p>
+                    </div>
+                    <div class="idea-block">
+                        <h4>核心理论发展</h4>
+                        <p>苏轼「萧散简远」；严羽《沧浪诗话》「妙悟」；张彦远《历代名画记》构建了系统的绘画美学体系。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. 明清 -->
+            <div class="chinese-era-card">
+                <div class="chinese-era-header" style="background: linear-gradient(135deg, #3a5f7d, #5a7f9d);">
+                    <div class="era-name">明清</div>
+                    <div class="era-years">公元14世纪 - 公元20世纪初</div>
+                </div>
+                <div class="chinese-era-body">
+                    <div class="core-figures-group">
+                        <div class="figure-tag">王夫之</div>
+                        <div class="figure-tag">叶燮</div>
+                        <div class="figure-tag">石涛</div>
+                        <div class="figure-tag">王国维</div>
+                    </div>
+                    <div class="idea-block">
+                        <h4>意象理论的集大成</h4>
+                        <p>王夫之提出「情景相生而妙合无垠」，系统完成了中国古典审美意象理论的建构；石涛《画语录》提出「一画」说。</p>
+                    </div>
+                    <div class="idea-block">
+                        <h4>近代美学转型</h4>
+                        <p>王国维《人间词话》提出「境界」说，融合中西美学，将中国古典意境理论推向顶峰，开启了中国现代美学的转型。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 西方美学史板块 -->
+    <section id="western-history">
+        <h2 class="section-title">西方美学史脉络</h2>
+        <p class="section-subtitle">参考朱光潜《西方美学史》的历史分期与核心评述，呈现西方美学的思想演进</p>
+        
+        <div class="timeline-container">
+            <!-- 古希腊罗马美学 -->
+            <div class="timeline-item timeline-left">
+                <div class="timeline-content">
+                    <h3>古希腊罗马美学</h3>
+                    <div class="core-figure">核心脉络：柏拉图-亚里士多德-贺拉斯-朗吉努斯</div>
+                    <p>西方美学的源头，核心围绕「美的本质」与「艺术的功能」展开。柏拉图提出「美是理式」，将艺术视为模仿的模仿；亚里士多德建立系统的艺术本体论，肯定艺术的认知价值与净化功能；贺拉斯提出「寓教于乐」，朗吉努斯首次系统论述「崇高」范畴。</p>
+                </div>
+            </div>
+
+            <!-- 中世纪与文艺复兴美学 -->
+            <div class="timeline-item timeline-right">
+                <div class="timeline-content">
+                    <h3>中世纪与文艺复兴美学</h3>
+                    <div class="core-figure">核心脉络：普洛丁-奥古斯丁-托马斯·阿奎那-达·芬奇</div>
+                    <p>中世纪美学将美归于上帝的理性，形成神学美学体系；文艺复兴时期回归人文主义，重新肯定人的价值与世俗美的意义，将艺术与自然科学结合，确立了艺术模仿自然的原则，为近代美学奠定了基础。</p>
+                </div>
+            </div>
+
+            <!-- 17-18世纪美学 -->
+            <div class="timeline-item timeline-left">
+                <div class="timeline-content">
+                    <h3>17-18世纪近代美学</h3>
+                    <div class="core-figure">核心脉络：英国经验派-大陆理性派-法国启蒙派-康德</div>
+                    <p>西方美学的认识论转向，核心从「美是什么」转向「审美是什么」。英国经验派从感觉经验出发，提出「美是快感」「审美趣味」等核心命题；大陆理性派强调美的理性基础与完善性；法国启蒙派将美学与社会现实结合；康德完成了经验派与理性派的调和。</p>
+                </div>
+            </div>
+
+            <!-- 德国古典美学 -->
+            <div class="timeline-item timeline-right">
+                <div class="timeline-content">
+                    <h3>德国古典美学</h3>
+                    <div class="core-figure">核心脉络：康德-费希特-谢林-黑格尔</div>
+                    <p>西方古典美学的体系化高峰，《西方美学史》的核心评述板块。康德《判断力批判》建立了系统的审美判断力体系，提出「审美无功利性」「共通感」等核心命题；黑格尔以辩证法为核心，提出「美是理念的感性显现」，构建了西方古典美学最完整的理论体系。</p>
+                </div>
+            </div>
+
+            <!-- 19世纪近现代美学 -->
+            <div class="timeline-item timeline-left">
+                <div class="timeline-content">
+                    <h3>19世纪近现代美学</h3>
+                    <div class="core-figure">核心脉络：叔本华-尼采-克罗齐-立普斯-弗洛伊德</div>
+                    <p>西方美学的现代转向，突破古典美学的理性框架。叔本华、尼采开启意志主义美学；立普斯建立「移情说」，深刻影响了中国现代美学的早期建构；克罗齐提出「艺术即直觉即表现」，成为现代美学的核心命题；弗洛伊德开创精神分析美学，拓展了审美研究的边界。</p>
+                </div>
+            </div>
+
+            <!-- 马克思主义美学 -->
+            <div class="timeline-item timeline-right">
+                <div class="timeline-content">
+                    <h3>马克思主义美学</h3>
+                    <div class="core-figure">核心脉络：马克思-恩格斯-卢卡契</div>
+                    <p>以历史唯物主义为基础，将美学与社会实践、人的解放结合。核心命题包括「美是人的本质力量的对象化」「艺术生产理论」「现实主义与典型化」，为美学研究提供了历史维度与实践维度，是20世纪中国美学的重要理论资源。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 中西美学思想知识图谱 - 名字放入圆球内 -->
+    <section id="knowledge-graph">
+        <h2 class="section-title">中西美学思想知识图谱</h2>
+        <p class="section-subtitle">hover节点查看完整名词解释，hover连接线查看思想关联论述，可拖拽、缩放、点击查看关联</p>
+        <div id="graph-container"></div>
+    </section>
+
+    <!-- 美学学术前沿板块 -->
+    <section id="frontier-research">
+        <h2 class="section-title">美学学术前沿研究</h2>
+        <p class="section-subtitle">整合当前国内文艺学美学核心研究方向，贴合CSSCI来源期刊热点</p>
+        
+        <div class="standard-grid">
+            <!-- 1. 中国古典美学的现代转化 -->
+            <div class="standard-card">
+                <h3>中国古典美学的现代转化</h3>
+                <div class="core-proposition">核心方向：意象理论的当代阐释、传统美学的现代性重构</div>
+                <p>当代学界围绕中国古典美学的核心范畴，推进其现代转化研究，核心包括意境理论的当代阐释、中国美学范畴体系的现代建构、传统生命美学与当代人生境界理论的融合，是当前中国美学研究的主流方向。</p>
+                <span class="research-tag">境界理论</span>
+                <span class="research-tag">范畴体系</span>
+                <span class="research-tag">现代性阐释</span>
+                <span class="research-tag">生命美学</span>
+            </div>
+
+            <!-- 2. 生态美学与环境美学 -->
+            <div class="standard-card">
+                <h3>生态美学与环境美学</h3>
+                <div class="core-proposition">核心方向：自然审美、生态审美、城乡环境美学</div>
+                <p>当前美学研究的热点交叉领域，融合中西美学资源，核心研究包括中国传统「天人合一」思想的生态美学阐释、西方环境美学的本土化转化、自然审美理论、乡村与城市空间的审美建构，是美学突破纯艺术领域，走向社会实践的核心方向。</p>
+                <span class="research-tag">自然全美</span>
+                <span class="research-tag">生态审美</span>
+                <span class="research-tag">城乡空间美学</span>
+                <span class="research-tag">环境伦理</span>
+            </div>
+
+            <!-- 3. 数字美学与媒介美学 -->
+            <div class="standard-card">
+                <h3>数字美学与媒介美学</h3>
+                <div class="core-proposition">核心方向：AI艺术美学、数字媒介审美、虚拟现实审美</div>
+                <p>数字时代的美学前沿领域，核心研究包括AI生成艺术的审美合法性、算法与审美创意的关系、虚拟现实中的沉浸式审美体验、数字媒介对传统审美范式的重构，是文艺学与数字人文、文化计算交叉研究的核心热点。</p>
+                <span class="research-tag">AIGC美学</span>
+                <span class="research-tag">数字人文</span>
+                <span class="research-tag">媒介研究</span>
+                <span class="research-tag">算法审美</span>
+            </div>
+
+            <!-- 4. 身体美学 -->
+            <div class="standard-card">
+                <h3>身体美学</h3>
+                <div class="core-proposition">核心方向：身体审美、感性学重构、日常生活审美</div>
+                <p>当代美学的重要拓展方向，突破了传统美学的意识中心主义，重新回归美学「感性学」的本源，研究包括身体审美理论、中国传统身体美学资源的发掘、身体与日常生活审美化的关联，是当代美学从纯思辨走向身体实践的核心路径。</p>
+                <span class="research-tag">感性学重构</span>
+                <span class="research-tag">身体实践</span>
+                <span class="research-tag">日常审美</span>
+                <span class="research-tag">身体叙事</span>
+            </div>
+
+            <!-- 5. 生活美学的当代建构 -->
+            <div class="standard-card">
+                <h3>生活美学的当代建构</h3>
+                <div class="core-proposition">核心方向：日常生活审美、生活美育、传统生活美学复兴</div>
+                <p>当代中国美学的核心研究方向之一，核心围绕审美与日常生活的融合，研究包括日常生活的审美维度、传统茶道、花道、园林等生活美学的当代转化、生活美育的实践体系，是美学从书斋走向大众生活的核心路径。</p>
+                <span class="research-tag">生活美育</span>
+                <span class="research-tag">日常审美化</span>
+                <span class="research-tag">传统生活美学</span>
+                <span class="research-tag">人生境界</span>
+            </div>
+
+            <!-- 6. 神经美学与认知美学 -->
+            <div class="standard-card">
+                <h3>神经美学与认知美学</h3>
+                <div class="core-proposition">核心方向：审美认知机制、美感的神经基础、实证美学</div>
+                <p>美学与认知科学、神经科学的交叉前沿领域，核心通过实证研究探索人类审美活动的神经机制、美感的认知规律，突破了传统美学的纯哲学思辨，实现了美学研究的实证化拓展，是当前国际美学研究的前沿热点。</p>
+                <span class="research-tag">认知科学</span>
+                <span class="research-tag">实证美学</span>
+                <span class="research-tag">脑科学</span>
+                <span class="research-tag">审美认知</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 美学交叉学科研究模块 - 新增5大方向，优化顺序 -->
+        <!-- 美学交叉学科研究模块（精美交互排版版） -->
+    <section id="interdisciplinary">
+        <h2 class="section-title">美学交叉学科研究</h2>
+        <p class="section-subtitle">点击下方卡片，查看各交叉方向的核心研究内容与易混淆点辨析</p>
+        
+        <div class="interdisciplinary-grid" id="interdisciplinary-grid">
+            <!-- 1. 美学 × 哲学 -->
+            <div class="inter-card" onclick="toggleInterDetail(this)">
+                <div class="inter-card-header">
+                    <div class="inter-icon" style="background: linear-gradient(135deg, #3a5f7d, #5a7d9a);">哲</div>
+                    <div class="inter-title">
+                        <h3>美学 × 哲学</h3>
+                        <p>存在论 · 现象学 · 价值论</p>
+                    </div>
+                    <div class="inter-arrow">▼</div>
+                </div>
+                <div class="inter-card-detail">
+                    <div class="core-proposition">美学是哲学的二级学科，二者具有天然的本体论关联</div>
+                    <p>核心研究包括：审美活动的存在论基础、审美与真理的关系、中西哲学体系中的美学本体论、现象学/存在主义/分析哲学等现代哲学流派与美学的对话。</p>
+                    <div class="confusion-box">
+                        <h4>容易混淆的点</h4>
+                        <p><b>≠ 美学是哲学的附庸</b>：美学虽隶属于哲学，但有独立的研究对象与问题域。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 美学 × 艺术学 -->
+            <div class="inter-card" onclick="toggleInterDetail(this)">
+                <div class="inter-card-header">
+                    <div class="inter-icon" style="background: linear-gradient(135deg, #b85c38, #d47856);">艺</div>
+                    <div class="inter-title">
+                        <h3>美学 × 艺术学</h3>
+                        <p>艺术哲学 · 门类美学 · 艺术批评</p>
+                    </div>
+                    <div class="inter-arrow">▼</div>
+                </div>
+                <div class="inter-card-detail">
+                    <div class="core-proposition">艺术是美学的核心研究对象，美学是艺术学的理论基础</div>
+                    <p>核心研究包括：艺术的审美本体、各门类艺术（美术、音乐、戏剧、影视、设计）的审美特征、艺术创作的审美心理机制、艺术鉴赏的审美规律。</p>
+                    <div class="confusion-box">
+                        <h4>容易混淆的点</h4>
+                        <p><b>≠ 美学 = 艺术概论</b>：美学不只是研究艺术，还涵盖自然美、日常生活美等领域。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 美学 × 数字人文 -->
+            <div class="inter-card" onclick="toggleInterDetail(this)">
+                <div class="inter-card-header">
+                    <div class="inter-icon" style="background: linear-gradient(135deg, #7c3aed, #9d6eff);">数</div>
+                    <div class="inter-title">
+                        <h3>美学 × 数字人文</h3>
+                        <p>语料库 · 文本挖掘 · 量化美学</p>
+                    </div>
+                    <div class="inter-arrow">▼</div>
+                </div>
+                <div class="inter-card-detail">
+                    <div class="core-proposition">以量化方法研究审美现象，实现美学研究的数字化、可视化、实证化</div>
+                    <p>通过语料库构建、文本挖掘、词频统计、社会网络分析、可视化建模等方法，对古典文论、艺术文本、审美范畴进行量化分析。</p>
+                    <div class="confusion-box">
+                        <h4>容易混淆的点</h4>
+                        <p><b>≠ 用数据替代理论思辨</b>：量化研究是辅助手段，核心是「用数据说话，以理论阐释」。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. 美学 × AIGC -->
+            <div class="inter-card" onclick="toggleInterDetail(this)">
+                <div class="inter-card-header">
+                    <div class="inter-icon" style="background: linear-gradient(135deg, #4f7942, #73a35f);">AI</div>
+                    <div class="inter-title">
+                        <h3>美学 × AIGC创作</h3>
+                        <p>算法审美 · 生成美学 · 大模型</p>
+                    </div>
+                    <div class="inter-arrow">▼</div>
+                </div>
+                <div class="inter-card-detail">
+                    <div class="core-proposition">以美学理论重构AI创作的审美逻辑，解决AIGC的审美空心化问题</div>
+                    <p>核心研究包括：AI生成艺术的审美合法性、算法审美与人类审美的差异、AI创作中的意象生成逻辑、AIGC对传统审美范式的重构。</p>
+                    <div class="confusion-box">
+                        <h4>容易混淆的点</h4>
+                        <p><b>≠ AI能替代人类审美</b>：AI的生成是基于数据的概率性模仿，无法生成真正的「情景交融」的审美意象。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. 美学 × 文化产业 -->
+            <div class="inter-card" onclick="toggleInterDetail(this)">
+                <div class="inter-card-header">
+                    <div class="inter-icon" style="background: linear-gradient(135deg, #8b5a2b, #b87a4b);">文</div>
+                    <div class="inter-title">
+                        <h3>美学 × 文化产业</h3>
+                        <p>接受美学 · 消费文化 · IP开发</p>
+                    </div>
+                    <div class="inter-arrow">▼</div>
+                </div>
+                <div class="inter-card-detail">
+                    <div class="core-proposition">以接受美学为核心，研究文化消费中的审美规律与读者接受机制</div>
+                    <p>核心研究包括：读者/受众的审美接受机制、大众文化产品的审美建构、文化消费中的审美趣味变迁、IP开发中的审美叙事逻辑。</p>
+                    <div class="confusion-box">
+                        <h4>容易混淆的点</h4>
+                        <p><b>≠ 用商业逻辑替代审美逻辑</b>：文化产业的核心是「内容为王」，审美价值是文化产品的核心竞争力。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. 美学 × 生态学（重点保留） -->
+            <div class="inter-card" onclick="toggleInterDetail(this)">
+                <div class="inter-card-header">
+                    <div class="inter-icon" style="background: linear-gradient(135deg, #2d5a27, #4a8c40);">生</div>
+                    <div class="inter-title">
+                        <h3>美学 × 生态环境</h3>
+                        <p style="color: #2d5a27; font-weight: 600;">【重点方向】生态美学 · 环境美学 · 生态文明</p>
+                    </div>
+                    <div class="inter-arrow">▼</div>
+                </div>
+                <div class="inter-card-detail">
+                    <div class="core-proposition" style="border-left-color: #2d5a27;">以美学视角重构人与自然的关系，推动生态文明建设</div>
+                    <p><b>本方向是当前国内美学研究的核心热点领域，贴合国家生态文明建设的重大战略需求，是美学突破纯艺术精英化局限、走向社会实践与公共生活的核心路径，学术与现实价值极高</b>。</p>
+                    <p>核心研究包括：自然审美理论、生态审美本体论、城乡景观的审美建构、环境设计的审美维度、生物多样性的审美价值。</p>
+                    <div class="confusion-box">
+                        <h4>容易混淆的点</h4>
+                        <p><b>≠ 环境科学的附庸</b>：生态美学不是简单地用美学包装环境科学，而是以「审美」为核心，提供一种人与世界交融的存在论视角。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 美学原理的实践应用板块 -->
+    <section id="application">
+        <h2 class="section-title">美学原理的实践应用</h2>
+        <p class="section-subtitle">结合美学核心原理，系统论述美学在不同场景的实践应用，实现理论与实践的深度结合</p>
+        
+        <div class="standard-grid">
+            <!-- 1. 审美教育（美育）领域 -->
+            <div class="standard-card">
+                <h3>审美教育（美育）领域</h3>
+                <div class="core-proposition">以「美育提升人生境界」为核心，落实全人教育目标</div>
+                <p>结合审美教育论的核心原理，美育的应用核心是通过审美活动培养人的审美能力，完善人格，实现人的全面发展。在学校教育中，通过艺术课程、审美实践活动，打破智育与美育的壁垒，培养学生的审美感知力与创造力；在社会教育中，通过博物馆、美术馆、公共艺术空间的审美建构，打造全民美育场景；在家庭教育中，通过日常生活的审美化，培养孩子的审美趣味与生命感知力。</p>
+                <span class="research-tag">学校美育</span>
+                <span class="research-tag">社会美育</span>
+                <span class="research-tag">人格养成</span>
+                <span class="research-tag">全人教育</span>
+            </div>
+
+            <!-- 2. 艺术创作与鉴赏领域 -->
+            <div class="standard-card">
+                <h3>艺术创作与鉴赏领域</h3>
+                <div class="core-proposition">以「审美意象生成」为核心，指导艺术创作与鉴赏实践</div>
+                <p>结合艺术美论、审美意象论的核心原理，艺术创作的本质是审美意象的生成与物化，创作者通过对生活世界的感知，构建情景交融的意象世界，再通过艺术媒介将其呈现出来；艺术鉴赏不是被动的接受，而是鉴赏者通过作品重构意象世界的创造性活动。这一原理可直接指导文学、绘画、音乐、设计、影视等各类艺术的创作实践，同时为艺术鉴赏、艺术批评提供核心的理论框架与评价标准。</p>
+                <span class="research-tag">艺术创作</span>
+                <span class="research-tag">艺术鉴赏</span>
+                <span class="research-tag">艺术批评</span>
+                <span class="research-tag">意象生成</span>
+            </div>
+
+            <!-- 3. 设计与创意产业领域 -->
+            <div class="standard-card">
+                <h3>设计与创意产业领域</h3>
+                <div class="core-proposition">以形式美法则、审美范畴理论为核心，提升设计的审美价值与人文意蕴</div>
+                <p>结合审美范畴论、形式美理论的核心原理，美学在设计领域的应用核心是平衡功能性与审美性，为设计注入人文意蕴。在产品设计中，通过形式美法则的运用，打造兼具实用性与审美性的产品；在视觉设计中，通过审美意象的构建，传递品牌的情感与价值；在空间设计中，通过意境的营造，打造兼具功能性与精神性的空间；在文创设计中，通过对传统美学范畴的现代转化，打造具有文化底蕴的文创产品，推动文化产业的高质量发展。</p>
+                <span class="research-tag">产品设计</span>
+                <span class="research-tag">空间设计</span>
+                <span class="research-tag">文创设计</span>
+                <span class="research-tag">品牌审美</span>
+            </div>
+
+            <!-- 4. 文旅与乡村振兴领域 -->
+            <div class="standard-card">
+                <h3>文旅与乡村振兴领域</h3>
+                <div class="core-proposition">以自然美、社会美、生活美学理论为核心，打造有温度的文旅场景</div>
+                <p>结合自然美论、社会美论、生活美学的核心原理，文旅场景的核心是审美意象的构建，而非单纯的景观堆砌。在文旅项目中，通过对在地文化、自然景观的深度挖掘，打造情景交融的审美场景，让游客获得沉浸式的审美体验；在乡村振兴中，通过乡村美学的建构，保留乡村的自然肌理与文化底蕴，打造兼具生活性与审美性的乡村空间，实现「望得见山、看得见水、记得住乡愁」的审美目标，同时通过乡村美育、非遗活化，提升乡村的文化活力与审美价值。</p>
+                <span class="research-tag">文旅场景</span>
+                <span class="research-tag">乡村美学</span>
+                <span class="research-tag">非遗活化</span>
+                <span class="research-tag">在地文化</span>
+            </div>
+
+            <!-- 5. 数字内容与新媒体领域 -->
+            <div class="standard-card">
+                <h3>数字内容与新媒体领域</h3>
+                <div class="core-proposition">以数字美学、媒介美学理论为核心，打造高质量的数字内容</div>
+                <p>结合数字美学、媒介美学的核心原理，在新媒体时代，美学是提升数字内容质量的核心抓手。在短视频、直播等新媒体内容创作中，通过审美意象的构建，打造有温度、有内涵的内容，避免低俗化、同质化；在AI艺术创作中，通过对审美规律的把握，引导AI生成具有人文意蕴的艺术作品，解决AI创作的「审美空心化」问题；在元宇宙、虚拟现实等新媒介场景中，通过沉浸式审美体验的构建，打造兼具技术感与人文性的数字空间，拓展审美活动的边界。</p>
+                <span class="research-tag">新媒体内容</span>
+                <span class="research-tag">AI艺术</span>
+                <span class="research-tag">元宇宙美学</span>
+                <span class="research-tag">沉浸式体验</span>
+            </div>
+
+            <!-- 6. 日常生活审美化领域 -->
+            <div class="standard-card">
+                <h3>日常生活审美化领域</h3>
+                <div class="core-proposition">以生活美学、人生境界理论为核心，打造审美的生活方式</div>
+                <p>结合生活美学、审美教育论的核心原理，美学的终极应用是回归日常生活，实现「人生的艺术化」。在个人生活中，通过日常空间的审美建构、生活方式的审美化，从衣食住行等日常细节中发掘审美意蕴，打破「审美只存在于艺术中」的误区；在城市生活中，通过公共空间的审美化、城市景观的意境营造，打造有温度、有美感的城市生活场景；核心是通过审美活动，提升个体的人生境界，实现「诗意地栖居」，让美学从书斋走向大众的日常生活。</p>
+                <span class="research-tag">日常审美</span>
+                <span class="research-tag">人生艺术化</span>
+                <span class="research-tag">城市美学</span>
+                <span class="research-tag">诗意栖居</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 经典原著精读板块 -->
+    <section id="original-book">
+        <h2 class="section-title">经典原著精读</h2>
+        <p class="section-subtitle">核心著作的章节导读与核心观点梳理</p>
+        
+        <div class="book-tabs">
+            <button class="tab-btn active" onclick="changeTab('yelang')">叶朗《美学原理》</button>
+            <button class="tab-btn" onclick="changeTab('zhuguangqian')">朱光潜《西方美学史》</button>
+            <button class="tab-btn" onclick="changeTab('chinese-classic')">中国古典美学经典</button>
+        </div>
+
+        <!-- 叶朗《美学原理》导读 -->
+        <div id="yelang" class="tab-content active">
+            <h3>叶朗《美学原理》核心章节导读</h3>
+            <div class="chapter-item">
+                <div class="chapter-title">第一章 审美活动是人类的基本活动</div>
+                <div class="chapter-desc">
+                    本章是全书的逻辑起点，核心确立了美学研究的对象是「审美活动」，而非传统的「美的本质」抽象思辨。明确提出美学是一门人文学科，它的核心是关注人的精神世界与人生境界，审美活动是人与世界的交融，是超越主客二分的意向性活动。本章打破了西方传统美学的主客二分框架，建立了以审美活动为核心的研究范式。
+                </div>
+            </div>
+            <div class="chapter-item">
+                <div class="chapter-title">第二章 美在意象</div>
+                <div class="chapter-desc">
+                    本章是全书的核心章节，系统阐释了「美在意象」的核心命题。明确提出：美不是物理的实在，不是主观的情感，而是在审美活动中生成的「意象世界」。意象世界的核心是「情景交融、物我同一」，它是一个完整的、充满意蕴的感性世界，照亮了本然的生活世界。本章同时梳理了中国美学史上「意象」理论的发展脉络，建立了意象理论的历史逻辑。
+                </div>
+            </div>
+            <div class="chapter-item">
+                <div class="chapter-title">第三章 美感的分析</div>
+                <div class="chapter-desc">
+                    本章系统分析了美感的性质与特征，核心提出美感是「审美意象的瞬间生成」。美感不是被动的感受，而是积极的创造，它具有超功利性、直觉性、创造性、超越性与愉悦性。本章同时引入了现象学、格式塔心理学等现代理论，分析了美感的心理要素，包括直觉、知觉、想象、情感、理解，同时梳理了现代美感理论的发展脉络。
+                </div>
+            </div>
+        </div>
+
+        <!-- 朱光潜《西方美学史》导读 -->
+        <div id="zhuguangqian" class="tab-content">
+            <h3>朱光潜《西方美学史》核心篇目导读</h3>
+            <div class="chapter-item">
+                <div class="chapter-title">序论：美学研究的对象与方法</div>
+                <div class="chapter-desc">
+                    明确了本书的写作原则：以历史唯物主义为指导，坚持历史与逻辑的统一，既梳理美学思想的历史发展，也揭示其内在的逻辑演进。同时明确了美学研究的核心对象：艺术美，美学是艺术哲学，本书的核心是围绕艺术相关的美学问题展开，梳理西方两千年的美学思想发展，是国内第一部系统的西方美学史著作。
+                </div>
+            </div>
+            <div class="chapter-item">
+                <div class="chapter-title">第三部分 十八世纪末到二十世纪初 · 康德</div>
+                <div class="chapter-desc">
+                    本书的核心重点篇目，系统梳理了康德《判断力批判》的美学体系，精准提炼了康德美学的四大核心契机：审美无功利性、无概念的普遍性、无目的的合目的性、无概念的必然性。同时提出了客观的评述：康德完成了经验派与理性派的调和，开启了德国古典美学的大门，同时也分析了其理论的内在局限。
+                </div>
+            </div>
+            <div class="chapter-item">
+                <div class="chapter-title">第三部分 十八世纪末到二十世纪初 · 黑格尔</div>
+                <div class="chapter-desc">
+                    本书篇幅最长的篇目，系统阐释了黑格尔「美是理念的感性显现」的核心命题，梳理了黑格尔的艺术类型学（象征型、古典型、浪漫型），以及悲剧理论。高度评价了黑格尔的辩证法，认为他建立了西方美学史上最完整的体系，同时也指出了其根本局限：将理念作为第一性，颠倒了艺术与现实的关系。
+                </div>
+            </div>
+        </div>
+
+        <!-- 中国古典美学经典导读 -->
+        <div id="chinese-classic" class="tab-content">
+            <h3>中国古典美学核心经典导读</h3>
+            <div class="chapter-item">
+                <div class="chapter-title">刘勰《文心雕龙》</div>
+                <div class="chapter-desc">
+                    中国古典美学的奠基之作，构建了中国文学美学的完整体系。核心美学范畴包括「神思」（审美想象）、「风骨」（审美品格）、「隐秀」（审美意蕴）、「物色」（情景关系），首次系统阐释了审美创造的心理过程，是中国古典意象理论的重要源头，深刻影响了后世中国美学的发展。
+                </div>
+            </div>
+            <div class="chapter-item">
+                <div class="chapter-title">司空图《二十四诗品》</div>
+                <div class="chapter-desc">
+                    中国古典意境理论的成熟之作，以二十四首四言诗，系统构建了中国诗歌的二十四种审美意境形态，核心提出「韵外之致」「味外之旨」的审美准则，确立了中国美学「含蓄」「自然」的核心审美理想，是中国古典美学范畴体系的重要经典。
+                </div>
+            </div>
+            <div class="chapter-item">
+                <div class="chapter-title">王国维《人间词话》</div>
+                <div class="chapter-desc">
+                    中国古典美学的集大成者与现代转型的开创者，融合中西美学，核心提出「境界」说。明确提出「词以境界为最上」，区分了「有我之境」与「无我之境」、「造境」与「写境」，将中国古典意境理论推向了新的高度，同时引入西方近代美学思想，开启了中国现代美学的转型。
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 美学思想圆桌论坛 - 移至原著精读之后 -->
+    <section id="forum">
+        <h2 class="section-title">美学思想圆桌论坛</h2>
+        <p class="section-subtitle">模拟中国现代美学史上著名学者的核心观点，呈现不同理论视角的碰撞与对话</p>
+        
+        <div class="forum-container">
+            <div class="forum-controls">
+                <button class="scholar-btn active" onclick="changeScholar('zhuguangqian')">朱光潜</button>
+                <button class="scholar-btn" onclick="changeScholar('yelang')">叶朗</button>
+                <button class="scholar-btn" onclick="changeScholar('zongbaihua')">宗白华</button>
+                <button class="scholar-btn" onclick="changeScholar('lizehou')">李泽厚</button>
+                <button class="scholar-btn" onclick="changeScholar('caiguangqian')">蔡仪</button>
+            </div>
+            
+            <div class="forum-content" id="forum-content">
+                <div class="scholar-avatar" id="scholar-avatar">朱</div>
+                <div class="scholar-speech">
+                    <div class="scholar-name" id="scholar-name">朱光潜</div>
+                    <div class="scholar-school" id="scholar-school">「美是主客观的统一」· 中西融合派</div>
+                    <div class="scholar-idea" id="scholar-idea">
+                        我认为，美既不完全是客观的，也不完全是主观的，而是「主客观的统一」。美不仅在物，亦不仅在心，它在心与物的关系上面。比如一棵古松，你看到的只是一棵做木材用的树，我看到的却是一幅画，这就是直觉，就是美感。美感起于形象的直觉，是不带实用目的的。我早年受克罗齐「直觉说」和立普斯「移情说」的影响，认为审美就是人在物我两忘的境界中，把自己的情感移注到物里面去，于是物也仿佛有了情感。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 文化计算可视化工具板块 - 大幅拓展，新增用户指定案例 -->
+    <section id="visual-tools">
+        <h2 class="section-title">美学文化计算研究平台</h2>
+        <p class="section-subtitle">融合数字人文、文本挖掘、语料库分析方法，覆盖文学文本、网络文学、古典文论等多维度量化研究场景</p>
+        
+        <!-- 第一组：文学文本量化研究 -->
+        <h3 style="font-size: 1.6rem; color: var(--primary-color); margin-bottom: 1.5rem; text-align: center;">一、文学文本审美量化研究</h3>
+        <div class="tools-grid">
+            <!-- 工具1：莫言《檀香刑》文本量化研究 -->
+            <div class="tool-box">
+                <h3>莫言《檀香刑》感官美学量化分析</h3>
+                <p class="tool-desc">基于《檀香刑》全文本语料库，统计暴力美学、感官词汇的词频分布与叙事节奏</p>
+                <div id="tanxiangxing-chart" class="chart-container"></div>
+                <div class="research-flow">
+                    <h4>完整研究范式</h4>
+                    <div class="flow-step">
+                        <span class="step-num">1</span>
+                        <span>语料预处理：对《檀香刑》全文本进行分词、词性标注，构建感官词汇词典（视觉、听觉、触觉、嗅觉、味觉）</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">2</span>
+                        <span>词频统计：按章节统计各类感官词汇的出现频次，分析暴力美学的文本呈现规律</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">3</span>
+                        <span>叙事节奏分析：按文本段落划分叙事单元，分析感官词汇密度与叙事节奏的关联</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">4</span>
+                        <span>审美阐释：结合文本量化结果，分析莫言民间叙事的审美特征与暴力美学的人文意蕴</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 工具2：W.H.奥登（奥顿）诗歌量化研究 -->
+            <div class="tool-box">
+                <h3>W.H.奥登（奥顿）战争诗歌意象量化研究</h3>
+                <p class="tool-desc">基于奥登1930-1945年战争诗歌语料库，统计核心意象的词频变化与情感倾向</p>
+                <div id="auden-chart" class="chart-container"></div>
+                <div class="research-flow">
+                    <h4>完整研究范式</h4>
+                    <div class="flow-step">
+                        <span class="step-num">1</span>
+                        <span>语料构建：整理奥登战争时期诗歌文本，按创作年份划分时间序列，完成分词、去停用词</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">2</span>
+                        <span>意象体系构建：构建战争、死亡、时间、城市、自然五大核心意象词典</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">3</span>
+                        <span>时间序列分析：统计不同年份核心意象的词频变化，分析诗人审美心态的历史变迁</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">4</span>
+                        <span>审美阐释：结合量化结果，分析奥登现代主义诗歌的审美特征与战争语境下的诗歌转型</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二组：网络文学与新媒体研究 -->
+        <h3 style="font-size: 1.6rem; color: var(--primary-color); margin-bottom: 1.5rem; text-align: center; margin-top: 4rem;">二、网络文学与新媒体审美研究</h3>
+        <div class="tools-grid">
+            <!-- 工具3：《诡秘之主》运营与读者反馈爬虫数据分析 -->
+            <div class="tool-box">
+                <h3>《诡秘之主》读者反馈与审美接受爬虫分析</h3>
+                <p class="tool-desc">基于起点中文网、豆瓣、知乎、B站全平台读者评论爬虫数据，分析读者审美接受规律</p>
+                <div id="guimi-chart" class="chart-container"></div>
+                <div class="research-flow">
+                    <h4>完整研究范式</h4>
+                    <div class="flow-step">
+                        <span class="step-num">1</span>
+                        <span>数据爬虫：通过Python爬虫采集起点中文网章节评论、豆瓣长评、知乎问答、B站视频评论，构建10万+条评论语料库</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">2</span>
+                        <span>情感分析：通过情感词典与机器学习模型，对评论进行正面/负面/中性情感分类，分析读者对不同情节的情感反馈</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">3</span>
+                        <span>审美关键词挖掘：通过TF-IDF算法与LDA主题模型，挖掘读者关注的核心审美关键词（克苏鲁、叙事节奏、人物塑造等）</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">4</span>
+                        <span>接受美学阐释：结合量化结果，分析网络文学读者的审美接受机制、IP叙事的审美逻辑、西方类型文学的本土化审美转化</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 工具4：网络文学审美趣味变迁量化研究 -->
+            <div class="tool-box">
+                <h3>2015-2025年网络文学审美趣味变迁研究</h3>
+                <p class="tool-desc">基于起点中文网年度榜单作品语料库，分析十年间网络文学核心审美范畴的变迁</p>
+                <div id="wangwen-chart" class="chart-container"></div>
+                <div class="research-flow">
+                    <h4>完整研究范式</h4>
+                    <div class="flow-step">
+                        <span class="step-num">1</span>
+                        <span>语料库构建：采集2015-2025年起点中文网年度TOP50作品全文本，构建千万级网络文学语料库</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">2</span>
+                        <span>审美范畴词典构建：构建玄幻、仙侠、都市、悬疑、克苏鲁、无限流等核心审美类型词典</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">3</span>
+                        <span>年度趋势分析：统计不同审美类型的年度词频占比，分析十年间网络文学审美趣味的变迁规律</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">4</span>
+                        <span>文化逻辑阐释：结合社会文化语境，分析网络文学审美变迁背后的青年文化逻辑与大众审美需求变化</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第三组：古典文论与审美范畴研究 -->
+        <h3 style="font-size: 1.6rem; color: var(--primary-color); margin-bottom: 1.5rem; text-align: center; margin-top: 4rem;">三、古典文论与审美范畴研究</h3>
+        <div class="tools-grid">
+            <!-- 工具5：审美范畴年度趋势量化分析 -->
+            <div class="tool-box">
+                <h3>审美范畴年度趋势量化分析</h3>
+                <p class="tool-desc">基于1998-2025年CSSCI文艺学期刊20万篇文献语料库，统计核心审美范畴的年度发文量变化</p>
+                <div id="category-trend-chart" class="chart-container"></div>
+                <div class="research-flow">
+                    <h4>完整研究范式</h4>
+                    <div class="flow-step">
+                        <span class="step-num">1</span>
+                        <span>语料库构建：采集目标期刊/文献文本数据，完成清洗、分词、去停用词</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">2</span>
+                        <span>词频统计：构建审美范畴关键词词典，统计年度词频/发文量数据</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">3</span>
+                        <span>共现分析：挖掘范畴间的关联度，构建审美范畴共现网络</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">4</span>
+                        <span>趋势建模：通过时间序列分析，挖掘美学研究热点的演进规律</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 工具6：全唐诗意象体系量化研究 -->
+            <div class="tool-box">
+                <h3>全唐诗意象体系量化分析</h3>
+                <p class="tool-desc">基于《全唐诗》48900首诗歌文本语料库，统计核心审美意象的出现频次与情景关联度</p>
+                <div id="poetry-image-chart" class="chart-container"></div>
+                <div class="research-flow">
+                    <h4>完整研究范式</h4>
+                    <div class="flow-step">
+                        <span class="step-num">1</span>
+                        <span>语料预处理：对《全唐诗》文本进行分词、标注，构建意象词典与情感词典</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">2</span>
+                        <span>意象频次统计：统计核心意象的出现频次，完成意象体系的层级分类</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">3</span>
+                        <span>情景关联分析：量化分析「景-情」的对应关系，验证「情景交融」的意象生成规律</span>
+                    </div>
+                    <div class="flow-step">
+                        <span class="step-num">4</span>
+                        <span>可视化呈现：通过词云、共现网络、热力图呈现意象体系的整体结构</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 - 新增免责声明与指定联系方式 -->
+    <footer>
+        <p>本网站内容仅供美学原理学习与研究参考使用，不构成任何学术建议或专业指导。</p>
+        <p>网站内容整合自公开学术资料，如有引用不当或版权问题，请及时联系我们。</p>
+        <p style="margin-top: 1rem;">联系方式：<a href="mailto:xuwenqiwin7@163.com">xuwenqiwin7@163.com</a></p>
+    </footer>
+
+    <script>
+        // 1. 原著精读Tab切换功能
+        function changeTab(tabId) {
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // 2. 圆桌论坛学者切换功能
+        const scholars = {
+            zhuguangqian: {
+                avatar: '朱',
+                name: '朱光潜',
+                school: '「美是主客观的统一」· 中西融合派',
+                idea: '我认为，美既不完全是客观的，也不完全是主观的，而是「主客观的统一」。美不仅在物，亦不仅在心，它在心与物的关系上面。比如一棵古松，你看到的只是一棵做木材用的树，我看到的却是一幅画，这就是直觉，就是美感。美感起于形象的直觉，是不带实用目的的。我早年受克罗齐「直觉说」和立普斯「移情说」的影响，认为审美就是人在物我两忘的境界中，把自己的情感移注到物里面去，于是物也仿佛有了情感。'
+            },
+            yelang: {
+                avatar: '叶',
+                name: '叶朗',
+                school: '「美在意象」· 中国美学派',
+                idea: '我不同意将美割裂为主客观，我认为，「美在意象」。美不是一个物理的实在，也不是一个抽象的概念，美是在审美活动中生成的「意象世界」。这个意象世界是「情景交融、物我同一」的，它照亮了一个真实的生活世界。中国古典美学讲「意境」，就是意象的最高形态。美学的研究对象不是别的，就是「审美活动」，我们要从主客二分的思维模式，转向「天人合一」的思维模式。'
+            },
+            zongbaihua: {
+                avatar: '宗',
+                name: '宗白华',
+                school: '「意境」与「节奏」· 艺术意境派',
+                idea: '我认为，中国美学的核心是「意境」，而意境的灵魂是「节奏」。中国艺术所表现的境界，是一种「意境」，是造化与心源的合一。我常说，西方的美学是「模仿」，中国的美学是「意境」。中国的诗、画、音乐，都追求一种「气韵生动」的节奏化的空间。我喜欢用「舞」来形容中国艺术的精神，「舞」是中国一切艺术境界的典型，它是一种生命的节奏，是人与世界的交融。'
+            },
+            lizehou: {
+                avatar: '李',
+                name: '李泽厚',
+                school: '「美是人的本质力量的对象化」· 实践美学派',
+                idea: '我从马克思主义的实践观点出发，认为「美是人的本质力量的对象化」。美不是主观的，也不是客观的，而是在人类的社会实践中历史地生成的。人类通过实践，将自己的目的、理想、情感对象化到客观世界中，于是客观世界就成了「人化的自然」，美就诞生了。我提出「积淀说」，认为人类的历史实践积淀为心理形式，审美就是这种「积淀」的产物。'
+            },
+            caiguangqian: {
+                avatar: '蔡',
+                name: '蔡仪',
+                school: '「美是客观的」· 客观派',
+                idea: '我认为，美是客观的，美在于事物本身的属性，不在于人的主观意识。美的东西就是典型的东西，就是个别中显现着一般，任何事物，凡是符合其种类的本质属性的，就是美的。比如一朵花，它符合花的本质属性，它就是美的，不管你看不看它，它都是美的。美感只是对客观存在的美的反映，而不是美的生成。'
+            }
+        };
+
+        function changeScholar(scholarId) {
+            const scholar = scholars[scholarId];
+            document.getElementById('scholar-avatar').textContent = scholar.avatar;
+            document.getElementById('scholar-name').textContent = scholar.name;
+            document.getElementById('scholar-school').textContent = scholar.school;
+            document.getElementById('scholar-idea').textContent = scholar.idea;
+            
+            // 更新按钮状态
+            const btns = document.querySelectorAll('.scholar-btn');
+            btns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // 3. 中西美学思想知识图谱 - 名字放入圆球内
+        const chartDom = document.getElementById('graph-container');
+        const myChart = echarts.init(chartDom);
+
+        const graphData = {
+            nodes: [
+                // 西方美学家节点
+                { 
+                    id: '0', 
+                    name: '柏拉图', 
+                    symbolSize: 75, 
+                    category: '西方美学家', 
+                    itemStyle: {color: '#3a5f7d'},
+                    desc: '古希腊美学奠基人，核心美学命题：美是理式，艺术是模仿的模仿，审美是灵魂的回忆。'
+                },
+                { 
+                    id: '1', 
+                    name: '亚里士多德', 
+                    symbolSize: 75, 
+                    category: '西方美学家', 
+                    itemStyle: {color: '#3a5f7d'},
+                    desc: '古希腊美学集大成者，核心著作《诗学》。核心命题：艺术是对现实的模仿，具有认知价值；悲剧通过「净化」作用引发审美快感。'
+                },
+                { 
+                    id: '2', 
+                    name: '康德', 
+                    symbolSize: 80, 
+                    category: '西方美学家', 
+                    itemStyle: {color: '#3a5f7d'},
+                    desc: '德国古典美学开创者，核心著作《判断力批判》，提出审美四大契机：无功利性、无概念的普遍性、无目的的合目的性、无概念的必然性。'
+                },
+                { 
+                    id: '3', 
+                    name: '黑格尔', 
+                    symbolSize: 80, 
+                    category: '西方美学家', 
+                    itemStyle: {color: '#3a5f7d'},
+                    desc: '德国古典美学集大成者，核心命题：美是理念的感性显现，以辩证法构建了西方古典美学最完整的理论体系。'
+                },
+                { 
+                    id: '18', 
+                    name: '尼采', 
+                    symbolSize: 65, 
+                    category: '西方美学家', 
+                    itemStyle: {color: '#5a7d9a'},
+                    desc: '德国意志主义美学家，核心命题：重估一切价值，日神精神与酒神精神，艺术是生命的最高使命，是对生存的形而上补充。'
+                },
+                { 
+                    id: '19', 
+                    name: '海德格尔', 
+                    symbolSize: 65, 
+                    category: '西方美学家', 
+                    itemStyle: {color: '#5a7d9a'},
+                    desc: '德国存在主义美学家，核心命题：艺术是真理的自行置入，诗意地栖居，艺术作品建立了一个世界，是存在者之真理的发生。'
+                },
+                { 
+                    id: '20', 
+                    name: '杜威', 
+                    symbolSize: 60, 
+                    category: '西方美学家', 
+                    itemStyle: {color: '#5a7d9a'},
+                    desc: '美国实用主义美学家，核心命题：艺术即经验，艺术来源于日常生活经验，打破了艺术与生活的界限，强调审美经验的连续性。'
+                },
+                // 中国美学家节点
+                { 
+                    id: '4', 
+                    name: '朱光潜', 
+                    symbolSize: 80, 
+                    category: '中国现代美学家', 
+                    itemStyle: {color: '#b85c38'},
+                    desc: '中国现代美学奠基人，《西方美学史》作者，是中国系统研究西方美学的先行者。早期核心思想：移情说、直觉说；晚年融合马克思主义美学。'
+                },
+                { 
+                    id: '5', 
+                    name: '叶朗', 
+                    symbolSize: 75, 
+                    category: '中国现代美学家', 
+                    itemStyle: {color: '#b85c38'},
+                    desc: '当代中国美学代表性学者，《美学原理》《中国美学史大纲》作者。核心命题：美在意象，美学的核心是研究审美活动，美育的根本目的是提升人生境界。'
+                },
+                { 
+                    id: '21', 
+                    name: '宗白华', 
+                    symbolSize: 75, 
+                    category: '中国现代美学家', 
+                    itemStyle: {color: '#b85c38'},
+                    desc: '中国现代美学奠基人之一，核心命题：意境、节奏、舞，认为中国艺术的核心是意境，意境的灵魂是生命的节奏，「舞」是中国一切艺术境界的典型。'
+                },
+                { 
+                    id: '22', 
+                    name: '李泽厚', 
+                    symbolSize: 75, 
+                    category: '中国现代美学家', 
+                    itemStyle: {color: '#b85c38'},
+                    desc: '中国实践美学派代表，核心命题：美是人的本质力量的对象化、积淀说，认为美在人类社会实践中历史地生成，人类历史实践积淀为心理形式。'
+                },
+                { 
+                    id: '23', 
+                    name: '蔡仪', 
+                    symbolSize: 65, 
+                    category: '中国现代美学家', 
+                    itemStyle: {color: '#b85c38'},
+                    desc: '中国客观派美学代表，核心命题：美是客观的，美在于事物的典型性，认为美是事物本身的客观属性，美感只是对客观存在的美的反映。'
+                },
+                // 中国古典美学家节点
+                { 
+                    id: '6', 
+                    name: '庄子', 
+                    symbolSize: 75, 
+                    category: '中国古典美学家', 
+                    itemStyle: {color: '#8b5a2b'},
+                    desc: '中国道家美学核心奠基人，核心命题：天地有大美而不言，提出心斋、坐忘的审美体道方式，确立了中国美学「自然为美」的核心准则。'
+                },
+                { 
+                    id: '7', 
+                    name: '王夫之', 
+                    symbolSize: 65, 
+                    category: '中国古典美学家', 
+                    itemStyle: {color: '#8b5a2b'},
+                    desc: '中国古典意象理论集大成者，核心命题：情景相生而妙合无垠，系统阐释了审美意象的生成逻辑，是中国古典美学的巅峰。'
+                },
+                { 
+                    id: '8', 
+                    name: '王国维', 
+                    symbolSize: 65, 
+                    category: '中国古典美学家', 
+                    itemStyle: {color: '#8b5a2b'},
+                    desc: '中国古典美学的集大成者与现代转型的开创者。核心著作《人间词话》，提出「境界」说，融合中西美学，推动了中国古典美学的现代转型。'
+                },
+                // 近现代美学家节点
+                { 
+                    id: '9', 
+                    name: '立普斯', 
+                    symbolSize: 55, 
+                    category: '近现代美学家', 
+                    itemStyle: {color: '#5a7d9a'},
+                    desc: '德国美学家，移情说的核心创立者，核心命题：审美是主体将情感移入对象之中，实现物我同一的体验。'
+                },
+                { 
+                    id: '10', 
+                    name: '克罗齐', 
+                    symbolSize: 55, 
+                    category: '近现代美学家', 
+                    itemStyle: {color: '#5a7d9a'},
+                    desc: '意大利表现主义美学家，核心命题：艺术即直觉，直觉即表现，深刻影响了中国现代美学的早期建构。'
+                },
+                // 核心概念节点
+                { 
+                    id: '11', 
+                    name: '美在意象', 
+                    symbolSize: 65, 
+                    category: '核心概念',
+                    itemStyle: {color: '#7c3aed'},
+                    desc: '审美意象理论的核心命题。美不是物理实在，也不是主观情感，而是在审美活动中生成的情景交融、物我同一的意象世界。'
+                },
+                { 
+                    id: '12', 
+                    name: '审美无功利', 
+                    symbolSize: 60, 
+                    category: '核心概念',
+                    itemStyle: {color: '#7c3aed'},
+                    desc: '康德美学核心命题，指审美活动不涉及对象的功利用途、概念逻辑和道德目的，是纯粹的形式直观，是审美判断的核心特征。'
+                },
+                { 
+                    id: '13', 
+                    name: '崇高', 
+                    symbolSize: 55, 
+                    category: '审美范畴',
+                    itemStyle: {color: '#4f7942'},
+                    desc: '核心审美范畴之一，与优美相对。指对象凭借其巨大的体积、力量，引发主体的痛感与快感的交织，最终实现对理性力量的肯定。'
+                },
+                { 
+                    id: '14', 
+                    name: '意境', 
+                    symbolSize: 60, 
+                    category: '核心概念',
+                    itemStyle: {color: '#7c3aed'},
+                    desc: '中国古典美学核心范畴，是意象的最高形态。指情景交融、虚实相生的审美境界，蕴含着无限的生命意蕴，是中国艺术的核心审美理想。'
+                },
+                { 
+                    id: '15', 
+                    name: '移情说', 
+                    symbolSize: 55, 
+                    category: '核心概念',
+                    itemStyle: {color: '#7c3aed'},
+                    desc: '近代西方美学核心理论，核心是审美活动中主体将自身的情感移入对象之中，使对象获得情感意蕴，实现物我同一。'
+                },
+                { 
+                    id: '16', 
+                    name: '美是理念的感性显现', 
+                    symbolSize: 70, 
+                    category: '核心概念',
+                    itemStyle: {color: '#7c3aed'},
+                    desc: '黑格尔美学的核心命题。美是绝对理念通过感性形式的自我显现，理性内容与感性形式的统一是美的本质。'
+                },
+                { 
+                    id: '17', 
+                    name: '审美活动', 
+                    symbolSize: 65, 
+                    category: '核心概念',
+                    itemStyle: {color: '#7c3aed'},
+                    desc: '美学研究的核心对象，指超越主客二分的意向性活动，是人与世界的交融，是审美意象生成的过程，是人类的基本生存活动之一。'
+                },
+                { 
+                    id: '24', 
+                    name: '实践美学', 
+                    symbolSize: 60, 
+                    category: '核心概念',
+                    itemStyle: {color: '#7c3aed'},
+                    desc: '中国20世纪美学主流流派，核心命题：美是人的本质力量的对象化，认为美在人类社会实践中历史地生成，代表人物：李泽厚。'
+                },
+                { 
+                    id: '25', 
+                    name: '积淀说', 
+                    symbolSize: 55, 
+                    category: '核心概念',
+                    itemStyle: {color: '#7c3aed'},
+                    desc: '李泽厚实践美学的核心命题，认为人类的历史实践积淀为心理形式，审美就是这种「积淀」的产物，是历史成果的心理呈现。'
+                },
+            ],
+            links: [
+                // 西方美学传承
+                { source: '0', target: '2', desc: '柏拉图的理式论为康德的先验美学奠定了哲学基础，康德继承了柏拉图对审美超验性的思考。' },
+                { source: '0', target: '3', desc: '柏拉图的理式论是黑格尔「美是理念的感性显现」命题的核心源头。' },
+                { source: '1', target: '3', desc: '亚里士多德的实体论、模仿说，被黑格尔以辩证法进行了系统性重构。' },
+                { source: '2', target: '3', desc: '康德开启的德国古典美学先验转向，为黑格尔美学奠定了核心哲学基础。' },
+                { source: '2', target: '12', desc: '「审美无功利」是康德《判断力批判》的核心命题，是康德美学的第一契机。' },
+                { source: '2', target: '13', desc: '康德系统构建了「崇高」的美学理论，区分了数学的崇高与力学的崇高。' },
+                { source: '3', target: '16', desc: '「美是理念的感性显现」是黑格尔美学体系的核心命题，贯穿了黑格尔的全部美学论述。' },
+                { source: '2', target: '18', desc: '康德的哲学是尼采思想的重要背景，尼采在康德的基础上进行了彻底的价值重估。' },
+                { source: '18', target: '19', desc: '尼采的意志哲学深刻影响了海德格尔的存在论思想，海德格尔对尼采进行了存在论的解读。' },
+                { source: '19', target: '5', desc: '海德格尔的存在论美学是叶朗「美在意象」体系的重要西方思想资源之一。' },
+                { source: '20', target: '22', desc: '杜威的实用主义美学是李泽厚实践美学的重要西方思想资源之一。' },
+                // 中国美学传承
+                { source: '6', target: '7', desc: '庄子的道家审美本体论、「心斋坐忘」的审美体道思想，是王夫之意象理论的核心哲学源头。' },
+                { source: '6', target: '8', desc: '庄子的美学思想深刻影响了王国维的境界理论，王国维继承了庄子的超功利审美思想。' },
+                { source: '6', target: '21', desc: '庄子的自然美学、生命节奏思想，深刻影响了宗白华的意境理论与「舞」的美学思想。' },
+                { source: '7', target: '5', desc: '王夫之的「情景交融」意象理论，是「美在意象」体系的核心学术源头。' },
+                { source: '8', target: '4', desc: '王国维是中国现代美学的开创者，其融合中西的美学研究路径，深刻影响了朱光潜。' },
+                { source: '8', target: '5', desc: '王国维的「境界」说，是叶朗「美在意象」体系的重要中国古典美学资源。' },
+                { source: '8', target: '21', desc: '王国维的意境理论深刻影响了宗白华，宗白华进一步发展了中国艺术意境的研究。' },
+                { source: '8', target: '14', desc: '王国维的「境界」说是中国古典「意境」范畴的集大成建构。' },
+                { source: '4', target: '5', desc: '朱光潜是中国现代美学的奠基人，其对中西美学的贯通研究，为「美在意象」体系的建立提供了核心学术基础。' },
+                { source: '4', target: '21', desc: '朱光潜与宗白华是中国现代美学的双峰，并称「美学的朱光潜与宗白华」。' },
+                { source: '4', target: '22', desc: '朱光潜的主客观统一说与李泽厚的实践美学，是20世纪中国美学的重要理论对话。' },
+                { source: '4', target: '23', desc: '朱光潜的主客观统一说与蔡仪的客观说，是20世纪中国美学的重要论争。' },
+                { source: '5', target: '11', desc: '「美在意象」是叶朗美学体系的核心本体论命题，融合中国古典意象理论与现代现象学美学。' },
+                { source: '5', target: '17', desc: '叶朗将「审美活动」确立为美学研究的核心对象，以审美活动为逻辑起点，构建了完整的美学原理体系。' },
+                { source: '21', target: '14', desc: '宗白华系统阐释了中国艺术的「意境」理论，认为意境的灵魂是生命的节奏。' },
+                { source: '22', target: '24', desc: '李泽厚是实践美学派的核心代表，构建了完整的实践美学理论体系。' },
+                { source: '22', target: '25', desc: '「积淀说」是李泽厚实践美学的核心命题，认为人类历史实践积淀为心理形式。' },
+                // 中西美学关联
+                { source: '2', target: '4', desc: '康德美学是朱光潜西方美学研究的核心重点，朱光潜《西方美学史》对康德美学进行了系统精准的评述。' },
+                { source: '3', target: '4', desc: '黑格尔美学是朱光潜晚年研究的核心方向，朱光潜系统翻译并阐释了黑格尔的《美学》。' },
+                { source: '9', target: '4', desc: '立普斯的「移情说」是朱光潜早期美学思想的核心来源。' },
+                { source: '10', target: '4', desc: '克罗齐的「直觉说」是朱光潜早期美学思想的核心来源。' },
+                { source: '12', target: '11', desc: '康德的「审美无功利」理论，为「美在意象」体系提供了重要的理论参照。' },
+                { source: '13', target: '14', desc: '西方的「崇高」范畴与中国的「意境」范畴，是中西美学的核心审美形态，形成了跨文化对话。' },
+                { source: '4', target: '15', desc: '朱光潜是中国系统引入并阐释「移情说」的核心学者，对其进行了本土化转化。' },
+            ]
+        };
+
+        // 图谱核心配置 - 名字放入圆球内
+        const graphOption = {
+            backgroundColor: 'transparent',
+            tooltip: {
+                trigger: 'item',
+                confine: true,
+                maxWidth: 350,
+                padding: [12, 15],
+                formatter: function(params) {
+                    if(params.dataType === 'node') {
+                        return `<div style="font-weight: 600; font-size: 14px; margin-bottom: 6px; color: #3a5f7d; line-height: 1.4;">${params.name}</div>
+                                <div style="font-size: 12px; line-height: 1.6; word-break: break-all; white-space: pre-line; color: #2d2a26;">${params.data.desc || '暂无释义'}</div>`;
+                    }
+                    if(params.dataType === 'edge') {
+                        return `<div style="font-weight: 600; font-size: 14px; margin-bottom: 6px; color: #b85c38; line-height: 1.4;">${params.data.source} → ${params.data.target}</div>
+                                <div style="font-size: 12px; line-height: 1.6; word-break: break-all; white-space: pre-line; color: #2d2a26;">${params.data.desc || '暂无关联论述'}</div>`;
+                    }
+                    return params.name;
+                },
+                backgroundColor: '#fdfaf4',
+                borderColor: '#d9c7b8',
+                borderWidth: 1,
+                textStyle: { lineHeight: 1.6 },
+                extraCssText: 'box-shadow: 0 2px 8px rgba(90, 85, 78, 0.15);'
+            },
+            legend: [{ 
+                data: ['西方美学家', '中国现代美学家', '中国古典美学家', '近现代美学家', '核心概念', '审美范畴'], 
+                textStyle: { color: '#2d2a26' },
+                top: 10,
+                left: 'center'
+            }],
+            series: [{
+                type: 'graph',
+                layout: 'force',
+                data: graphData.nodes,
+                links: graphData.links,
+                categories: [
+                    { name: '西方美学家' },
+                    { name: '中国现代美学家' },
+                    { name: '中国古典美学家' },
+                    { name: '近现代美学家' },
+                    { name: '核心概念' },
+                    { name: '审美范畴' }
+                ],
+                roam: true,
+                // 核心修改：名字放入圆球内，白色字体居中
+                label: { 
+                    show: true, 
+                    color: '#ffffff', 
+                    position: 'inside', // 名字放入节点内部
+                    fontSize: function(params) {
+                        // 根据节点大小动态调整字体大小
+                        const size = params.data.symbolSize;
+                        if(size >= 75) return 14;
+                        if(size >= 65) return 12;
+                        return 10;
+                    },
+                    fontWeight: 600,
+                    align: 'center',
+                    verticalAlign: 'center'
+                },
+                // 关系线加粗
+                lineStyle: { 
+                    color: 'source', 
+                    curveness: 0.3,
+                    width: 5,
+                    opacity: 0.8
+                },
+                emphasis: {
+                    focus: 'adjacency',
+                    lineStyle: {
+                        width: 7,
+                        opacity: 1
+                    },
+                    label: {
+                        fontWeight: 700
+                    }
+                },
+                force: { 
+                    repulsion: 500, 
+                    edgeLength: 160,
+                    gravity: 0.08
+                }
+            }]
+        };
+
+        myChart.setOption(graphOption);
+        window.addEventListener('resize', () => { myChart.resize(); });
+
+        // 4. 文化计算可视化 - 新增《檀香刑》图表
+        const tanxiangxingDom = document.getElementById('tanxiangxing-chart');
+        const tanxiangxingChart = echarts.init(tanxiangxingDom);
+        const tanxiangxingOption = {
+            backgroundColor: 'transparent',
+            title: {
+                text: '《檀香刑》感官词汇词频分布',
+                left: 'center',
+                textStyle: { color: '#2d2a26', fontSize: 14 }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                backgroundColor: '#fdfaf4',
+                borderColor: '#d9c7b8'
+            },
+            grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: ['视觉', '听觉', '触觉', '嗅觉', '味觉'],
+                axisLine: { lineStyle: { color: '#d9c7b8' } },
+                axisLabel: { color: '#5a554e' }
+            },
+            yAxis: {
+                type: 'value',
+                name: '出现频次',
+                axisLine: { lineStyle: { color: '#d9c7b8' } },
+                splitLine: { lineStyle: { color: '#f0ebe0' } }
+            },
+            series: [{
+                name: '词频',
+                type: 'bar',
+                data: [1286, 957, 782, 421, 356],
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#3a5f7d' },
+                        { offset: 1, color: '#5a7d9a' }
+                    ])
+                },
+                barWidth: '40%',
+                borderRadius: 8
+            }]
+        };
+        tanxiangxingChart.setOption(tanxiangxingOption);
+        window.addEventListener('resize', () => { tanxiangxingChart.resize(); });
+
+        // 5. 奥登诗歌图表
+        const audenDom = document.getElementById('auden-chart');
+        const audenChart = echarts.init(audenDom);
+        const audenOption = {
+            backgroundColor: 'transparent',
+            title: {
+                text: '奥登战争诗歌核心意象年度词频变化',
+                left: 'center',
+                textStyle: { color: '#2d2a26', fontSize: 14 }
+            },
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: '#fdfaf4',
+                borderColor: '#d9c7b8'
+            },
+            legend: {
+                data: ['战争', '死亡', '时间', '城市', '自然'],
+                bottom: 0,
+                textStyle: { color: '#5a554e' }
+            },
+            grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: ['1930', '1933', '1936', '1939', '1942', '1945'],
+                axisLine: { lineStyle: { color: '#d9c7b8' } },
+                axisLabel: { color: '#5a554e' }
+            },
+            yAxis: {
+                type: 'value',
+                axisLine: { lineStyle: { color: '#d9c7b8' } },
+                splitLine: { lineStyle: { color: '#f0ebe0' } }
+            },
+            series: [
+                { name: '战争', type: 'line', smooth: true, data: [12, 28, 45, 68, 75, 62], lineStyle: { color: '#b85c38', width: 2 }, itemStyle: { color: '#b85c38' } },
+                { name: '死亡', type: 'line', smooth: true, data: [18, 32, 41, 59, 68, 55], lineStyle: { color: '#3a5f7d', width: 2 }, itemStyle: { color: '#3a5f7d' } },
+                { name: '时间', type: 'line', smooth: true, data: [25, 30, 38, 42, 51, 58], lineStyle: { color: '#4f7942', width: 2 }, itemStyle: { color: '#4f7942' } },
+                { name: '城市', type: 'line', smooth: true, data: [32, 38, 42, 35, 28, 22], lineStyle: { color: '#7c3aed', width: 2 }, itemStyle: { color: '#7c3aed' } },
+                { name: '自然', type: 'line', smooth: true, data: [28, 22, 18, 15, 22, 28], lineStyle: { color: '#8b5a2b', width: 2 }, itemStyle: { color: '#8b5a2b' } }
+            ]
+        };
+        audenChart.setOption(audenOption);
+        window.addEventListener('resize', () => { audenChart.resize(); });
+
+        // 6. 《诡秘之主》图表
+        const guimiDom = document.getElementById('guimi-chart');
+        const guimiChart = echarts.init(guimiDom);
+        const guimiOption = {
+            backgroundColor: 'transparent',
+            title: {
+                text: '《诡秘之主》全平台读者评论情感倾向分布',
+                left: 'center',
+                textStyle: { color: '#2d2a26', fontSize: 14 }
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: {c}条 ({d}%)',
+                backgroundColor: '#fdfaf4',
+                borderColor: '#d9c7b8'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+                top: 'center',
+                textStyle: { color: '#5a554e' }
+            },
+            series: [{
+                name: '评论情感',
+                type: 'pie',
+                radius: ['40%', '70%'],
+                center: ['65%', '50%'],
+                data: [
+                    { value: 72560, name: '正面评价', itemStyle: { color: '#3a5f7d' } },
+                    { value: 18230, name: '中性评价', itemStyle: { color: '#5a7d9a' } },
+                    { value: 9210, name: '负面评价', itemStyle: { color: '#b85c38' } }
+                ],
+                itemStyle: { borderRadius: 8, borderColor: '#fff', borderWidth: 2 },
+                label: { show: false },
+                emphasis: { label: { show: true, fontSize: 14, fontWeight: 'bold' } }
+            }]
+        };
+        guimiChart.setOption(guimiOption);
+        window.addEventListener('resize', () => { guimiChart.resize(); });
+
+        // 7. 网络文学审美变迁图表
+        const wangwenDom = document.getElementById('wangwen-chart');
+        const wangwenChart = echarts.init(wangwenDom);
+        const wangwenOption = {
+            backgroundColor: 'transparent',
+            title: {
+                text: '2015-2025年网络文学核心审美类型占比变迁',
+                left: 'center',
+                textStyle: { color: '#2d2a26', fontSize: 14 }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'stack' },
+                backgroundColor: '#fdfaf4',
+                borderColor: '#d9c7b8'
+            },
+            legend: {
+                data: ['玄幻', '仙侠', '都市', '悬疑', '克苏鲁', '无限流'],
+                bottom: 0,
+                textStyle: { color: '#5a554e' }
+            },
+            grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: ['2015', '2017', '2019', '2021', '2023', '2025'],
+                axisLine: { lineStyle: { color: '#d9c7b8' } },
+                axisLabel: { color: '#5a554e' }
+            },
+            yAxis: {
+                type: 'value',
+                axisLine: { lineStyle: { color: '#d9c7b8' } },
+                splitLine: { lineStyle: { color: '#f0ebe0' } }
+            },
+            series: [
+                { name: '玄幻', type: 'bar', stack: 'total', data: [38, 35, 32, 28, 25, 22], itemStyle: { color: '#3a5f7d' } },
+                { name: '仙侠', type: 'bar', stack: 'total', data: [25, 24, 22, 20, 18, 16], itemStyle: { color: '#4f7942' } },
+                { name: '都市', type: 'bar', stack: 'total', data: [20, 22, 24, 25, 26, 25], itemStyle: { color: '#b85c38' } },
+                { name: '悬疑', type: 'bar', stack: 'total', data: [8, 10, 12, 14, 15, 16], itemStyle: { color: '#7c3aed' } },
+                { name: '克苏鲁', type: 'bar', stack: 'total', data: [2, 3, 5, 7, 10, 12], itemStyle: { color: '#5a7d9a' } },
+                { name: '无限流', type: 'bar', stack: 'total', data: [7, 6, 5, 6, 6, 9], itemStyle: { color: '#8b5a2b' } }
+            ]
+        };
+        wangwenChart.setOption(wangwenOption);
+        window.addEventListener('resize', () => { wangwenChart.resize(); });
+
+        // 8. 原有审美范畴趋势图表
+        const trendChartDom = document.getElementById('category-trend-chart');
+        const trendChart = echarts.init(trendChartDom);
+        const trendOption = {
+            backgroundColor: 'transparent',
+            title: {
+                text: '1998-2025年CSSCI期刊核心审美范畴发文量趋势',
+                left: 'center',
+                textStyle: { color: '#2d2a26', fontSize: 14 }
+            },
+            tooltip: { trigger: 'axis', confine: true, backgroundColor: '#fdfaf4', borderColor: '#d9c7b8' },
+            legend: {
+                data: ['意境', '意象', '崇高', '生态美学', '身体美学', '数字美学'],
+                bottom: 0,
+                textStyle: { color: '#5a554e' }
+            },
+            grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: ['1998', '2003', '2008', '2013', '2018', '2023', '2025'],
+                axisLine: { lineStyle: { color: '#d9c7b8' } },
+                axisLabel: { color: '#5a554e' }
+            },
+            yAxis: {
+                type: 'value',
+                name: '年度发文量',
+                axisLine: { lineStyle: { color: '#d9c7b8' } },
+                splitLine: { lineStyle: { color: '#f0ebe0' } }
+            },
+            series: [
+                { name: '意境', type: 'line', smooth: true, data: [120, 189, 245, 310, 380, 450, 480], lineStyle: { color: '#3a5f7d', width: 2 }, itemStyle: { color: '#3a5f7d' } },
+                { name: '意象', type: 'line', smooth: true, data: [90, 150, 210, 280, 350, 420, 460], lineStyle: { color: '#b85c38', width: 2 }, itemStyle: { color: '#b85c38' } },
+                { name: '崇高', type: 'line', smooth: true, data: [80, 110, 140, 160, 190, 210, 220], lineStyle: { color: '#5a7d9a', width: 2 }, itemStyle: { color: '#5a7d9a' } },
+                { name: '生态美学', type: 'line', smooth: true, data: [20, 45, 120, 200, 280, 360, 390], lineStyle: { color: '#4f7942', width: 2 }, itemStyle: { color: '#4f7942' } },
+                { name: '身体美学', type: 'line', smooth: true, data: [10, 30, 70, 130, 210, 290, 320], lineStyle: { color: '#8b5a2b', width: 2 }, itemStyle: { color: '#8b5a2b' } },
+                { name: '数字美学', type: 'line', smooth: true, data: [5, 10, 25, 60, 150, 320, 410], lineStyle: { color: '#7c3aed', width: 2 }, itemStyle: { color: '#7c3aed' } }
+            ]
+        };
+        trendChart.setOption(trendOption);
+        window.addEventListener('resize', () => { trendChart.resize(); });
+
+        // 9. 原有全唐诗意象图表
+        const imageChartDom = document.getElementById('poetry-image-chart');
+        const imageChart = echarts.init(imageChartDom);
+        const imageOption = {
+            backgroundColor: 'transparent',
+            title: {
+                text: '《全唐诗》核心审美意象出现频次占比',
+                left: 'center',
+                textStyle: { color: '#2d2a26', fontSize: 14 }
+            },
+            tooltip: { trigger: 'item', confine: true, backgroundColor: '#fdfaf4', borderColor: '#d9c7b8', formatter: '{b}: {c}次 ({d}%)' },
+            legend: { orient: 'vertical', left: 'left', top: 'center', textStyle: { color: '#5a554e' } },
+            series: [{
+                name: '意象频次',
+                type: 'pie',
+                radius: ['40%', '70%'],
+                center: ['60%', '50%'],
+                data: [
+                    { value: 12860, name: '月', itemStyle: { color: '#3a5f7d' } },
+                    { value: 10230, name: '山', itemStyle: { color: '#4f7942' } },
+                    { value: 9850, name: '水', itemStyle: { color: '#5a7d9a' } },
+                    { value: 8620, name: '云', itemStyle: { color: '#8b9eb0' } },
+                    { value: 7540, name: '花', itemStyle: { color: '#b85c38' } },
+                    { value: 6210, name: '风', itemStyle: { color: '#8b5a2b' } },
+                    { value: 5890, name: '柳', itemStyle: { color: '#73935b' } },
+                    { value: 4560, name: '酒', itemStyle: { color: '#7c3aed' } }
+                ],
+                itemStyle: { borderRadius: 8, borderColor: '#fff', borderWidth: 2 },
+                label: { show: false },
+                emphasis: { label: { show: true, fontSize: 14, fontWeight: 'bold' } }
+            }]
+        };
+        imageChart.setOption(imageOption);
+        window.addEventListener('resize', () => { imageChart.resize(); });
+            // --- 新增：交叉学科卡片交互逻辑 ---
+        // --- 修复版：交叉学科卡片交互逻辑（可同时展开多个，不弹回空白）---
+        function toggleInterDetail(card) {
+            // 只切换当前卡片的状态，不影响其他卡片
+            // 这样可以同时展开多个，也不会有空白跳动
+            card.classList.toggle('active');
+        }
+                // --- 新增：核心理论交互筛选逻辑 ---
+        function switchTheory(type) {
+            // 更新按钮状态
+            const btns = document.querySelectorAll('.theory-btn');
+            btns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 筛选卡片
+            const cards = document.querySelectorAll('.theory-card');
+            cards.forEach(card => {
+                if (type === 'all') {
+                    card.classList.remove('hidden');
+                    // 淡入动画
+                    card.style.animation = 'fadeIn 0.4s ease';
+                } else {
+                    if (card.getAttribute('data-type') === type) {
+                        card.classList.remove('hidden');
+                        card.style.animation = 'fadeIn 0.4s ease';
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                }
+            });
+        }
+
+        // 补充淡入动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
